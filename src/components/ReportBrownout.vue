@@ -1,0 +1,499 @@
+<template>
+    <div class="flex items-center justify-center text-xs lg:text-base min-h-screen text-white px-3">
+        <!-- <header class="absolute top-0 w-full bg-gray-800 text-white justify-center p-2 text-xs flex items-center gap-1 px-2">
+            <img src="/images/cas1-logo.webp" alt="CASURECO 1 LOGO" width="15" height="20"> CASURECO I
+        </header> -->
+        <SpinnerOverlay v-if="isLoading"/>
+        <div class="w-full md:w-1/2 xl:w-2/5 grid grid-cols-1 m-3 space-y-2" >
+            
+            <!-- <div v-if="!tickets" class="border border-gray-300 rounded-lg bg-white p-5"> -->
+            <div v-if="(tickets && tickets.pending_ticket.length == 0) || !tickets">
+                <div v-if="!isSummary" class="space-y-8  rounded-lg ">
+                    <div class="space-y-2">
+                        <h3 class="font-bold text-center text-lg">Brownout Report</h3>
+                        <h3 class="text-center">Please provide the details below </h3>
+                    </div>
+                    <!-- <hr/> -->
+                    <div class="space-y-3">
+                        <div v-if="tickets && tickets.pending_ticket.length > 0" class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700">
+                        <!-- <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700"> -->
+                            You have an active ticket. Click here to view the details: 
+                            <router-link :to="{ name: 'TicketDetails', params: { data: tickets }}" class="text-blue-700 hover:underline cursor-pointer">View Ticket</router-link>
+                        </div>
+                        <div class="bg-red-100 text-red-700 px-3 py-2 rounded-md" ref="error_message" v-if="Object.values(errors).some(error => error)">
+                            <ul class="text-left px-5 m-0 list-disc">
+                                <li v-for="error in errors" v-if="error"><small>{{ error }}</small></li>
+                            </ul>
+                        </div>
+                        <div class="text-center" v-if="!data.userLocation && locationType == 'current' && !fetching_location">
+                            <button class="btn btn-success " @click="getLocation()">Allow Location Access</button>
+                        </div>
+                        <div v-if="fetching_location && !data.userLocation && locationType == 'current'" class="text-center my-3">Please wait, Fetching Location...</div>
+                        <div v-if="locationType == 'current' && !fetching_location && data.userLocation">
+                            <l-map :zoom="zoom" :center="center" @ready="onMapReady" class=" h-36 md:h-48 w-full rounded"  ref="map">
+                                <l-tile-layer :url="tileLayerUrl" />
+                                <l-marker v-if="data.userLocation" :lat-lng="data.userLocation" :draggable="true" @moveend="updateLocation">
+                                    <l-popup>Drag me to change location</l-popup>
+                                </l-marker>
+                            </l-map>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="space-x-2">
+                                <input type="radio" id="inlineRadio1" name="inlineRadio" value="current" v-model="locationType">
+                                <label for="inlineRadio1">Get my current location</label>
+                            </div>
+
+                            <div class="space-x-2">
+                                <input type="radio" id="inlineRadio2" name="inlineRadio" value="manual" v-model="locationType">
+                                <label for="inlineRadio2">Enter Address Manually</label>
+                            </div>
+                        </div>
+                        <div v-if="locationType == 'manual'" class="space-y-3">
+                            <div class="space-y-2">
+                                <label for="mun">Municipality: <label class="text-red-500">*</label></label>
+                                <select ref="mun" id="mun" class="form-control" @blur="validateField('municipality')" :class="{'border border-red-500 ring-red-500  bg-red-100': errors.municipality}" v-model="data.municipality" @change="getBrgy()">
+                                    <option selected disabled>Please Select</option>
+                                    <option :value="mun" v-for="mun in municipalities">{{ mun.name }}</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="bgy">Barangay: <label class="text-red-500">*</label></label>
+                                <select ref="bgy" id="bgy" class="form-control" @blur="validateField('barangay')" :class="{'border border-red-500 ring-red-500  bg-red-100': errors.barangay}" v-model="data.barangay" :disabled="!data.municipality">
+                                    <option selected disabled>Please Select</option>
+                                    <option :value="bgy" v-for="bgy in brgys">{{ bgy.name }}</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="zone">Sitio/Zone/Street: <label class="text-red-500">*</label></label>
+                                <input id="zone" type="text" class="form-control" v-model="data.zone" @blur="validateField('zone')" :class="{'border border-red-500 ring-red-500  bg-red-100': errors.zone}">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label for="name">Name: <label class="text-red-500">*</label></label>
+                                <input id="name" type="text" class="form-control" v-model="data.name" @blur="validateField('name')" :class="{'border border-red-500 ring-red-500 bg-red-100': errors.name}" >
+                            </div>
+                            <div class="space-y-1">
+                                <label for="mobile">Mobile No.: <label class="text-red-500">*</label></label>
+                                <input id="mobile" type="number" class="form-control" v-model="data.mobile" @blur="validateField('mobile')" :class="{'border border-red-500 ring-red-500 bg-red-100': errors.mobile}">
+                            </div>
+                            <div class="col-span-full space-y-1">
+                                <label for="message">Message: <label class="text-xs">(Optional)</label></label>
+                                <textarea id="message" class="form-control" rows="2" v-model="data.message"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button class="btn btn-danger w-full lg:w-1/2 justify-center" @click="submitReport()" :disabled="isLoading">Submit</button>
+                    </div>
+                </div>
+                <div v-if="isSummary" class="bg-green-50 p-5 rounded-lg border border-green-200 text-green-600">
+                    <div class="border-b border-green-200 pb-3 mb-5 text-center">
+                        <div class="flex justify-center items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-10 h-10 text-green-500">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h1 class="font-semibold text-lg">Thank you!</h1>
+                        <h2 >Your report has been received</h2>
+                    </div>
+                    <div class="space-y-1.5 text-gray-800">
+                        <div class="flex">
+                            <h4 class="flex-none w-16 lg:w-32">Ticket No.</h4> 
+                            <div class="flex-none px-5 lg:px-8">:</div>
+                            <h4 class="flex-1 font-medium">20250304123</h4>
+                        </div>
+                        <div class="flex">
+                            <h4 class="flex-none w-16 lg:w-32">Name</h4> 
+                            <div class="flex-none px-5 lg:px-8">:</div>
+                            <h4 class="flex-1">{{ summaryData.name }}</h4>
+                        </div>
+                        <div class="flex">
+                            <h4 class="flex-none w-16 lg:w-32">Mobile No.</h4>
+                            <div class="flex-none px-5 lg:px-8">:</div>
+                            <h4 class="flex-1">{{ summaryData.mobile }}</h4>
+                        </div>
+                        <div class="flex">
+                            <h4 class="flex-none w-16 lg:w-32">Address</h4>
+                            <div class="flex-none px-5 lg:px-8">:</div>
+                            <h4 class="flex-1">{{ summaryData.address }}</h4>
+                        </div>
+                        <div class="flex">
+                            <h4 class="flex-none w-16 lg:w-32">Date</h4>
+                            <div class="flex-none px-5 lg:px-8">:</div>
+                            <h4 class="flex-1">{{ curr_datetime.toLocaleString() }}</h4>
+                        </div>
+                        <div class="flex">
+                            <h4 class="flex-none w-16 lg:w-32">Message</h4>
+                            <div class="flex-none px-5 lg:px-8">:</div>
+                            <div class="flex-1 break-words overflow-auto">{{ summaryData.message }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</template>
+
+<script>
+import { LMap, LTileLayer, LMarker, LPopup } from "vue2-leaflet";
+import L from "leaflet";
+
+// Import Leaflet Fullscreen Plugin
+import "leaflet.fullscreen";
+import "leaflet.fullscreen/Control.FullScreen.css";
+import axios from 'axios'
+import SpinnerOverlay from "./SpinnerOverlay.vue";
+import Tickets from "./Tickets.vue";
+
+    export default {
+        components: { LMap, LTileLayer, LMarker, LPopup,SpinnerOverlay,Tickets },
+        data() {
+            return {
+                center: [51.505, -0.09], // Default: Manila, Philippines
+                zoom: 17,
+                tileLayerUrl: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                userLocation: null, // Stores user's location
+                userLocation2: null,
+                locationType: 'current',
+                fetching_location: false,
+                data: { 
+                    userLocation: "", 
+                    latitude: "",
+                    longitude: "",
+                    mobile: this.$route.query.mobile ?? "",
+                    name: this.$route.query.name ?? "",
+                    zone: "",
+                    barangay: "",
+                    municipality: "",
+                    message: this.$route.query.message ?? "",
+                },
+                errors: {
+                    server: null,
+                    name: null,
+                    mobile: null,
+                    userLocation: null,
+                    municipality: null,
+                    zone: null,
+                    barangay: null,
+                },
+                brgys: [],
+                municipalities: [],
+                psgcData: [],
+                name_error: false,
+                name_error_message: '',
+                mobile_error: false,
+                mobile_error_message: '',
+                location_error: false,
+                location_error_message: '',
+                isLoading: false,
+                isSummary: false,
+                summaryData: [],
+                curr_datetime: new Date(),
+                tickets: null
+            };
+        },
+        created() {
+            this.getMyTicketHistory()
+            this.getPSGC()
+        },
+        mounted(){
+            if (navigator.permissions) {
+            navigator.permissions.query({ name: "geolocation" }).then((result) => {
+                console.log(result.state)
+                if (result.state === "granted") {
+                    this.getLocation();
+                }
+            });
+            }
+        },
+        watch: {
+            locationType(){
+                this.data.municipality = ""
+                this.data.barangay = ""
+                this.data.zone = ""
+
+                this.errors.municipality = null
+                this.errors.barangay = null
+                this.errors.zone = null
+            }
+        },  
+        methods: {
+            async getLocation() {
+                if ("geolocation" in navigator) {
+                    try {
+                        this.fetching_location = true;
+                        // console.log("Fetching location...");
+                        
+
+                        const position = await new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(resolve, reject);
+                        });
+
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        this.data.userLocation = [lat, lng];
+                        this.userLocation2 = [lat, lng];
+                        this.center = [lat, lng];
+
+                        console.log("Latitude:", lat, "Longitude:", lng);
+
+                        // Call reverse geocoding function
+                        // await this.getAddress(lat, lng);
+                        // console.log("Location fully loaded.");
+                        this.fetching_location = false;
+                    } catch (error) {
+                        console.error("Error getting location:", error.message);
+                        this.errors.server = "Error getting location"
+                        this.fetching_location = false;
+                    }
+                } else {
+                    console.error("Geolocation is not supported by this browser.");
+                    this.errors.server = "Geolocation is not supported by this browser"
+                }
+            },
+            onMapReady(map) {
+                // const map = this.$refs.map.mapObject;
+        
+                // Add Fullscreen Control to Map
+                if (L.control && L.control.fullscreen) {
+                    map.addControl(L.control.fullscreen({ position: "topright" }));
+                } else {
+                    console.error("Fullscreen plugin not loaded correctly");
+                }
+            },
+            getAddress(lat, lng) {
+                fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+                    .then(response => response.json())
+                    .then(data => {
+                    console.log("Full Address:", data);
+
+                    const barangay = data.address.suburb || data.address.village || "Not Found";
+                    const municipality = data.address.city || data.address.town || "Not Found";
+                    const street = data.address.road || "Not Found";
+
+                    console.log("Barangay:", barangay);
+                    console.log("Municipality:", municipality);
+                    console.log("Street:", street);
+                    })
+                    .catch(error => console.error("Error fetching address:", error));
+            },
+            handleLocationType() {
+                if (this.locationType === "current") {
+                    this.getLocation();
+                }
+            },
+            updateLocation(event) {
+                this.data.userLocation = [event.target.getLatLng().lat, event.target.getLatLng().lng];
+                this.userLocation2 = [event.target.getLatLng().lat, event.target.getLatLng().lng];
+                this.center = this.data.userLocation;
+                // this.$swal({
+                //     title: "Are you sure?",
+                //     text: "You changed your pinned location, are you sure you want to change it?",
+                //     icon: "warning",
+                //     showCancelButton: true,
+                //     confirmButtonText: "Yes",
+                //     cancelButtonText: "No",
+                // }).then((result) => {
+                //     if (result.isConfirmed) {
+                //         this.data.userLocation = [event.target.getLatLng().lat, event.target.getLatLng().lng];
+                //         this.userLocation2 = [event.target.getLatLng().lat, event.target.getLatLng().lng];
+                //         this.center = this.data.userLocation;
+                //     }else{
+                //         this.data.userLocation = [...this.userLocation2]
+                //     }
+                // });
+                
+            },
+            getDeviceId() {
+                let deviceId = localStorage.getItem("device_id");
+                if (!deviceId) {
+                    deviceId = crypto.randomUUID(); // Generate a new ID
+                    localStorage.setItem("device_id", deviceId);
+                }
+                return deviceId;
+            },
+            resetForms(){
+                this.errors = {
+                    server: null,
+                    name: null,
+                    mobile: null,
+                    userLocation: null,
+                    municipality: null
+                }
+                this.data = { 
+                    userLocation: "", 
+                    latitude: "",
+                    longitude: "",
+                    mobile: "",
+                    name: "",
+                    zone: "",
+                    barangay: "",
+                    municipality: "",
+                    message: "",
+                }
+            },
+            submitReport(){
+                var self = this
+                
+                Object.keys(this.data).forEach((field) => this.validateField(field));
+
+                if (Object.values(this.errors).some((error) => error)) {
+                    self.$refs.error_message.focus()
+                    return;
+                }
+                
+
+                const rawData = self.data
+                self.curr_datetime = new Date();
+                const userDeviceID = self.getDeviceId()
+
+                rawData.latitude = rawData.userLocation[0]
+                rawData.longitude = rawData.userLocation[1]
+
+                const address = rawData.zone + ", " + rawData.barangay.name + ", " + rawData.municipality.name
+                const address2 = self.locationType == 'current' ? 'Current Location' : address
+                const formData = {
+                    created_at: self.curr_datetime.toISOString(),
+                    name: rawData.name,
+                    address: address2,
+                    mobile: rawData.mobile,
+                    latitude: rawData.latitude.toString(),
+                    longitude: rawData.longitude.toString(),
+                    message: rawData.message,
+                    uuid: userDeviceID.toString()
+                }
+                
+                self.summaryData = formData
+                // self.$swal({
+                //     title: "Report Summary",
+                //     html:
+                //         "<h6>Please review your report details before you submit</h6><br/>"+
+                //         `<div style='text-align:left;'><h6>Name: ${formData.name} </h6>`+
+                //         `<h6>Mobile No.: ${formData.mobile} </h6>`+
+                //         `<h6>Address: ${address2}</h6>`+
+                //         `${formData.message.length > 0 ? `<h6>Message: ${formData.message}</h6>` : ''}</div>`,
+                //     icon: "warning",
+                //     customClass: {
+                //         title: "swal-custom-title",
+                //         popup: "custom-swal-popup",
+                //     },
+                //     showCancelButton: true,
+                //     confirmButtonText: "Submit",
+                //     cancelButtonText: "Cancel",
+                // }).then((result) => {
+                //     if (result.isConfirmed) {
+                        self.isLoading = true
+                        
+                        axios.post(`http://${import.meta.env.VITE_API_URL}/ticket/create`, formData)
+                        .then((response) => {
+                            self.isSummary = true
+                            // self.$swal({
+                            //     title: 'Report Submitted',
+                            //     html:
+                            //         "<h6>Thank you! Your brownout report has been received</h6><br/>"+
+                            //         `<div style='text-align:left;'><h6>Name: ${formData.name} </h6>`+
+                            //         `<h6>Mobile Number: ${formData.mobile} </h6>`+
+                            //         `<h6>Address: ${address2}</h6>`+
+                            //         "<h6>Ticket No.: ABCDEFGHI</h6>"+
+                            //         `<h6>Date: ${curr_datetime.toLocaleString()} </h6> ${formData.message.length > 0 ? `<h6>Message: ${formData.message}</h6>` : ''}</div>`,
+                            //     icon: 'success',
+                            //     customClass: {
+                            //         title: "swal-custom-title",
+                            //     },
+                            // })
+                            self.isLoading = false
+                            self.resetForms()
+                        })
+                        .catch((error) => {
+                            self.isLoading = false
+                            self.errors.server = "There was an error occurred. Please try again"
+                            switch (error.response.status) {
+                                case 409:
+                                    self.errors.server = error.response.data.detail
+                                    break;
+                                default:
+                                    self.errors.server = "There was an error occurred. Please try again"
+                                    break;
+                            }
+                            
+                        })
+                //     }
+                // });
+            },
+            getPSGC(){
+                var self = this
+                fetch("/psgc.json") // Replace with your file path
+                .then(response => response.json()) // Parse JSON
+                .then(data => {
+                    self.psgcData = data
+                    self.municipalities = data.filter((m) => m.geo_level == 'Mun').sort((a, b) => a.name.localeCompare(b.name))
+                }) // Use the JSON data
+                .catch(error => console.error("Error loading JSON:", error));
+            },
+            getBrgy(){
+                var self = this
+                self.brgys = self.psgcData.filter((psgc) => psgc.geo_code.startsWith(self.data.municipality.geo_code.substring(0, 6)) && psgc.geo_level == 'Bgy').sort((a, b) => a.name.localeCompare(b.name))
+            },
+            validateName() {
+                const regex = /^[A-Za-zÑñ.]+(?:[-' ][A-Za-zÑñ.]+)*$/;
+
+                // Trim whitespace
+                const name = this.data.name.trim();
+                // Check if empty
+                if (!name) return "Name is required.";
+                // console.log(name.length)
+                // Check length constraints
+                if (name.length < 2) return `Invalid Name`;
+                if (name.length > 50) return `Invalid Name`;
+
+                // Check pattern
+                if (!regex.test(name)) return "Name contains invalid characters.";
+
+                return ""; // No errors, valid name
+            },
+            validateMobileNumber(mobile) {
+                // Remove spaces and dashes (optional formatting characters)
+                mobile = mobile.replace(/[\s-]/g, "");
+                // Convert +63 to 0 if it starts with +63
+                if (mobile.startsWith("63")) {
+                    mobile = "0" + mobile.slice(2);
+                }
+                // Validate that it follows the 11-digit PH mobile format
+                const regex = /^09\d{9}$/;
+                return regex.test(mobile) ? "" : "Invalid Mobile Number";
+            },
+            validateField(field) {
+                const value = this.data[field] == "" ? this.data[field].trim() : this.data[field];
+
+                const rules = {
+                    mobile: () => this.validateMobileNumber(value),
+                    name: () => this.validateName(value, 2, 50),
+                    userLocation: () => (value ? "" : this.locationType == 'current' ? "Location is required." : ''),
+                    municipality: () => (value ? "" : this.locationType == 'manual' ? "Municipality is required." : ""),
+                    barangay: () => (value ? "" : this.locationType == 'manual' ? "Barangay is required." : ""),
+                    zone: () => (value ? "" : this.locationType == 'manual' ? "Sitio/Zone/Street is required." : ""),
+                };
+
+                this.errors[field] = rules[field] ? rules[field]() : "";
+                
+                // console.log(this.errors)
+            },
+            async getMyTicketHistory(){
+                const userDeviceID = this.getDeviceId()
+                
+                await fetch(`http://${import.meta.env.VITE_API_URL}/ticket/get_my_ticket/${userDeviceID}`)
+                .then(response => response.json())
+                .then(data => {
+                    this.tickets = data
+                })
+                .catch(error => console.error("Error fetching address:", error));
+                
+            },
+            
+            
+            
+        }
+    }
+</script>
