@@ -15,61 +15,71 @@
 		"idpsgc" : 3,
 		"name" : "Ragay",
 		"geo_code" : "051730000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "01"
 	},
 	{
 		"idpsgc" : 4,
 		"name" : "Lupi",
 		"geo_code" : "051719000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "02"
 	},
 	{
 		"idpsgc" : 5,
 		"name" : "Sipocot",
 		"geo_code" : "051734000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "03"
 	},
 	{
 		"idpsgc" : 6,
 		"name" : "Libmanan",
 		"geo_code" : "051718000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "04"
 	},
 	{
 		"idpsgc" : 7,
 		"name" : "Cabusao",
 		"geo_code" : "051707000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "05"
 	},
 	{
 		"idpsgc" : 8,
 		"name" : "Pamplona",
 		"geo_code" : "051726000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "06"
 	},
 	{
 		"idpsgc" : 9,
 		"name" : "Pasacao",
 		"geo_code" : "051727000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "07"
 	},
 	{
 		"idpsgc" : 10,
 		"name" : "San Fernando",
 		"geo_code" : "051732000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "08"
 	},
 	{
 		"idpsgc" : 11,
 		"name" : "Camaligan",
 		"geo_code" : "051709000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "09"
 	},
 	{
 		"idpsgc" : 12,
 		"name" : "Gainza",
 		"geo_code" : "051713000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "10"
 	},
 	{
 		"idpsgc" : 13,
@@ -1887,7 +1897,8 @@
 		"idpsgc" : 316,
 		"name" : "Del Gallego",
 		"geo_code" : "051712000",
-		"geo_level" : "Mun"
+		"geo_level" : "Mun",
+		"cfareacode" : "12"
 	},
 	{
 		"idpsgc" : 317,

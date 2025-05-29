@@ -1,14 +1,18 @@
 <template>
-    <div class="flex items-center justify-center text-xs lg:text-base min-h-screen text-white px-3">
+    <div class="flex items-center justify-center text-xs lg:text-base min-h-screen text-gray-800">
         <!-- <header class="absolute top-0 w-full bg-gray-800 text-white justify-center p-2 text-xs flex items-center gap-1 px-2">
             <img src="/images/cas1-logo.webp" alt="CASURECO 1 LOGO" width="15" height="20"> CASURECO I
         </header> -->
+        <div v-if="isMessengerBrowser" class="text-justify bg-red-500 text-white p-5 rounded-lg">
+            <h1>To provide accurate results, we need access to your location.
+Please open this link in your device’s main browser (like Chrome or Safari), as Facebook Messenger’s built-in browser may not allow location access.</h1>
+        </div>
         <SpinnerOverlay v-if="isLoading"/>
-        <div class="w-full md:w-1/2 xl:w-2/5 grid grid-cols-1 m-3 space-y-2" >
+        <div class="w-full md:w-1/2 xl:w-2/5 grid grid-cols-1 m-3 space-y-2 pb-10" v-if="!isMessengerBrowser">
             
             <!-- <div v-if="!tickets" class="border border-gray-300 rounded-lg bg-white p-5"> -->
-            <div v-if="(tickets && tickets.pending_ticket.length == 0) || !tickets">
-                <div v-if="!isSummary" class="space-y-8  rounded-lg ">
+            <div>
+                <div v-if="!isSummary" class="rounded-lg space-y-8 bg-white p-3">
                     <div class="space-y-2">
                         <h3 class="font-bold text-center text-lg">Brownout Report</h3>
                         <h3 class="text-center">Please provide the details below </h3>
@@ -20,7 +24,11 @@
                             You have an active ticket. Click here to view the details: 
                             <router-link :to="{ name: 'TicketDetails', params: { data: tickets }}" class="text-blue-700 hover:underline cursor-pointer">View Ticket</router-link>
                         </div>
-                        <div class="bg-red-100 text-red-700 px-3 py-2 rounded-md" ref="error_message" v-if="Object.values(errors).some(error => error)">
+                        <!-- <div v-if="tickets && tickets.pending_ticket.length == 0" class="bg-red-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700"> -->
+                        <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700" v-if="tickets_in_range.length > 0">
+                            There {{ tickets_in_range.length === 1 ? 'is' : 'are' }} {{ tickets_in_range.length }} active ticket{{ tickets_in_range.length !== 1 ? 's' : '' }} in your area.
+                        </div>
+                        <div class="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm" ref="error_message" v-if="Object.values(errors).some(error => error)">
                             <ul class="text-left px-5 m-0 list-disc">
                                 <li v-for="error in errors" v-if="error"><small>{{ error }}</small></li>
                             </ul>
@@ -32,59 +40,198 @@
                         <div v-if="locationType == 'current' && !fetching_location && data.userLocation">
                             <l-map :zoom="zoom" :center="center" @ready="onMapReady" class=" h-36 md:h-48 w-full rounded"  ref="map">
                                 <l-tile-layer :url="tileLayerUrl" />
-                                <l-marker v-if="data.userLocation" :lat-lng="data.userLocation" :draggable="true" @moveend="updateLocation">
+                                <l-marker v-if="data.userLocation" :zIndexOffset="1000"  :lat-lng="data.userLocation" :draggable="true" @moveend="updateLocation">
                                     <l-popup>Drag me to change location</l-popup>
                                 </l-marker>
+                                <l-marker 
+                                    v-for="(marker, index) in tickets_in_range" 
+                                    :key="index" 
+                                    :lat-lng="[marker[1], marker[0]]"
+                                    :icon="customIcon"
+                                ></l-marker>
+                                
+                                
                             </l-map>
                         </div>
                         <div class="space-y-1">
                             <div class="space-x-2">
-                                <input type="radio" id="inlineRadio1" name="inlineRadio" value="current" v-model="locationType">
+                                <input type="radio" id="inlineRadio1" name="inlineRadio" value="current" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
                                 <label for="inlineRadio1">Get my current location</label>
                             </div>
 
                             <div class="space-x-2">
-                                <input type="radio" id="inlineRadio2" name="inlineRadio" value="manual" v-model="locationType">
+                                <input type="radio" id="inlineRadio2" name="inlineRadio" value="manual" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
                                 <label for="inlineRadio2">Enter Address Manually</label>
                             </div>
                         </div>
                         <div v-if="locationType == 'manual'" class="space-y-3">
-                            <div class="space-y-2">
-                                <label for="mun">Municipality: <label class="text-red-500">*</label></label>
-                                <select ref="mun" id="mun" class="form-control" @blur="validateField('municipality')" :class="{'border border-red-500 ring-red-500  bg-red-100': errors.municipality}" v-model="data.municipality" @change="getBrgy()">
-                                    <option selected disabled>Please Select</option>
-                                    <option :value="mun" v-for="mun in municipalities">{{ mun.name }}</option>
+                            <div class="relative space-y-1">
+                                <select
+                                    ref="mun"
+                                    id="mun"
+                                    v-model="data.municipality"
+                                    @change="getBrgy()"
+                                    @blur="validateField('municipality')"
+                                    :class="[
+                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm appearance-none focus:outline-none focus:ring-1',
+                                    errors.municipality ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    ]"
+                                    :disabled="tickets && tickets.pending_ticket.length > 0"
+                                >
+                                    <!-- <option disabled value="">Please Select</option> -->
+                                    <option :value="mun" v-for="mun in municipalities" :key="mun.id">{{ mun.name }}</option>
                                 </select>
+                                <label
+                                    for="mun"
+                                    :class="[
+                                    'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+                                    (data.municipality) ? '-top-2 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
+                                    errors.municipality ? 'bg-red-100 text-red-500' : 'bg-white',
+                                    ]"
+                                    class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                                >
+                                    Municipality: <span class="text-red-500">*</span>
+                                </label>
                             </div>
-                            <div class="space-y-2">
-                                <label for="bgy">Barangay: <label class="text-red-500">*</label></label>
-                                <select ref="bgy" id="bgy" class="form-control" @blur="validateField('barangay')" :class="{'border border-red-500 ring-red-500  bg-red-100': errors.barangay}" v-model="data.barangay" :disabled="!data.municipality">
-                                    <option selected disabled>Please Select</option>
-                                    <option :value="bgy" v-for="bgy in brgys">{{ bgy.name }}</option>
+                            <div class="relative space-y-1">
+                                <select
+                                    ref="bgy"
+                                    id="bgy"
+                                    v-model="data.barangay"
+                                    @blur="validateField('barangay')"
+                                    :class="[
+                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm appearance-none focus:outline-none focus:ring-1',
+                                    errors.barangay ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    ]"
+                                    :disabled="!data.municipality || (tickets && tickets.pending_ticket.length > 0)"
+                                >
+                                    <!-- <option disabled value="">Please Select</option> -->
+                                    <option :value="bgy" v-for="bgy in brgys" :key="bgy.id">{{ bgy.name }}</option>
                                 </select>
-                            </div>
-                            <div class="space-y-2">
-                                <label for="zone">Sitio/Zone/Street: <label class="text-red-500">*</label></label>
-                                <input id="zone" type="text" class="form-control" v-model="data.zone" @blur="validateField('zone')" :class="{'border border-red-500 ring-red-500  bg-red-100': errors.zone}">
-                            </div>
+                                <label
+                                    for="bgy"
+                                    :class="[
+                                    'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+                                    data.barangay ? '-top-2 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
+                                    errors.barangay ? 'bg-red-100 text-red-500' : 'bg-white',
+                                    ]"
+                                    class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                                >
+                                    Barangay: <span class="text-red-500">*</span>
+                                </label>
+                                </div>
+
+                                <div class="relative space-y-1">
+                                <input
+                                    id="zone"
+                                    type="text"
+                                    v-model="data.zone"
+                                    @blur="validateField('zone')"
+                                    :class="[
+                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1',
+                                    errors.zone ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    ]"
+                                    :disabled="tickets && tickets.pending_ticket.length > 0"
+                                    placeholder=" "
+                                    autocomplete="off"
+                                />
+                                <label
+                                    for="zone"
+                                    :class="[
+                                    'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+                                    data.zone ? '-top-2 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
+                                    errors.zone ? 'text-red-500' : 'bg-white',
+                                    ]"
+                                    class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                                >
+                                    Sitio/Zone/Street: <span class="text-red-500">*</span>
+                                </label>
+                                </div>
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                            <div class="space-y-1">
-                                <label for="name">Name: <label class="text-red-500">*</label></label>
-                                <input id="name" type="text" class="form-control" v-model="data.name" @blur="validateField('name')" :class="{'border border-red-500 ring-red-500 bg-red-100': errors.name}" >
+
+                            <!-- Name field -->
+                            <div class="relative space-y-1">
+                                <input
+                                    id="name"
+                                    type="text"
+                                    v-model="data.name"
+                                    @blur="validateField('name')"
+                                    :class="[
+                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1',
+                                    errors.name ? 'border-red-500 ring-red-500 ' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    ]"
+                                    :disabled="tickets && tickets.pending_ticket.length > 0"
+                                    placeholder=" "
+                                    autocomplete="off"
+                                />
+                                <label
+                                    for="name"
+                                    :class="[
+                                    'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+                                    (data.name) ? '-top-3 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
+                                    errors.name ? '' : '',
+                                    ]"
+                                    class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                                    ref="nameLabel"
+                                >
+                                    Name: <span class="text-red-500">*</span>
+                                </label>
                             </div>
-                            <div class="space-y-1">
-                                <label for="mobile">Mobile No.: <label class="text-red-500">*</label></label>
-                                <input id="mobile" type="number" class="form-control" v-model="data.mobile" @blur="validateField('mobile')" :class="{'border border-red-500 ring-red-500 bg-red-100': errors.mobile}">
+
+                            <!-- Mobile field -->
+                            <div class="relative space-y-1">
+                                <input
+                                id="mobile"
+                                type="number"
+                                v-model="data.mobile"
+                                @blur="validateField('mobile')"
+                                :class="[
+                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1',
+                                    errors.mobile ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                ]"
+                                :disabled="tickets && tickets.pending_ticket.length > 0"
+                                placeholder=" "
+                                autocomplete="off"
+                                />
+                                <label
+                                for="mobile"
+                                :class="[
+                                    'absolute left-3 bg-white px-1 transition-all duration-200 ease-in-out text-gray-500',
+                                    data.mobile ? '-top-3 text-xs text-blue-500' : 'top-2 text-sm',
+                                ]"
+                                class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500"
+                                >
+                                Mobile No.: <span class="text-red-500">*</span>
+                                </label>
                             </div>
-                            <div class="col-span-full space-y-1">
-                                <label for="message">Message: <label class="text-xs">(Optional)</label></label>
-                                <textarea id="message" class="form-control" rows="2" v-model="data.message"></textarea>
+
+                            <!-- Message textarea -->
+                            <div class="relative col-span-full space-y-1">
+                                <textarea
+                                id="message"
+                                rows="2"
+                                v-model="data.message"
+                                :disabled="tickets && tickets.pending_ticket.length > 0"
+                                placeholder=" "
+                                class="peer block w-full border border-gray-300 rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                ></textarea>
+                                <label
+                                for="message"
+                                :class="[
+                                    'absolute left-3 bg-white px-1 transition-all duration-200 ease-in-out text-gray-500',
+                                    data.message ? '-top-3 text-xs text-blue-500' : 'top-2 text-sm',
+                                ]"
+                                class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500"
+                                >
+                                Message: <span class="text-xs">(Optional, but it’s helpful for us to understand your issue better)</span>
+                                </label>
                             </div>
-                        </div>
+
+                            </div>
                     </div>
                     <div class="text-center">
-                        <button class="btn btn-danger w-full lg:w-1/2 justify-center" @click="submitReport()" :disabled="isLoading">Submit</button>
+                        <button class="btn btn-primary w-full lg:w-1/2 justify-center" @click="submitReport()" :disabled="isLoading || tickets && tickets.pending_ticket.length > 0">Submit</button>
                     </div>
                 </div>
                 <div v-if="isSummary" class="bg-green-50 p-5 rounded-lg border border-green-200 text-green-600">
@@ -146,6 +293,7 @@ import "leaflet.fullscreen/Control.FullScreen.css";
 import axios from 'axios'
 import SpinnerOverlay from "./SpinnerOverlay.vue";
 import Tickets from "./Tickets.vue";
+import CryptoJS from 'crypto-js';
 
     export default {
         components: { LMap, LTileLayer, LMarker, LPopup,SpinnerOverlay,Tickets },
@@ -191,22 +339,44 @@ import Tickets from "./Tickets.vue";
                 isSummary: false,
                 summaryData: [],
                 curr_datetime: new Date(),
-                tickets: null
+                tickets: null,
+                tickets_in_range: [],
+                customIcon: L.icon({
+                iconUrl: "/images/marker2.png",  // Change this path
+                    iconSize: [30, 30],  // Size of the icon
+                    iconAnchor: [15, 30],  // Anchor point of the icon (bottom-center)
+                    popupAnchor: [0, -30]  // Popup anchor position
+                }),
+                isMessengerBrowser: false,
+                messengerID: null,
             };
         },
         created() {
             this.getMyTicketHistory()
             this.getPSGC()
+            if(this.$route.query.token){
+                const params = new URLSearchParams(window.location.search);
+                const token = params.get('token'); // token is decoded properly now
+                this.messengerID = this.decryptAES(token, import.meta.env.VITE_AES_KEY);
+            }
+           
         },
         mounted(){
-            if (navigator.permissions) {
-            navigator.permissions.query({ name: "geolocation" }).then((result) => {
-                console.log(result.state)
-                if (result.state === "granted") {
-                    this.getLocation();
-                }
-            });
+            if (navigator.userAgent.includes("FBAN") || navigator.userAgent.includes("FBAV")) {
+                this.isMessengerBrowser = true;
+                return;
             }
+            if (navigator.permissions) {
+                navigator.permissions.query({ name: "geolocation" }).then((result) => {
+                    if (result.state === "granted") {
+                        this.errors.server = ""
+                        this.getLocation();
+                    }else{
+                        this.errors.server = "Please allow location access"
+                    }
+                });
+            }
+            
         },
         watch: {
             locationType(){
@@ -223,13 +393,18 @@ import Tickets from "./Tickets.vue";
             async getLocation() {
                 if ("geolocation" in navigator) {
                     try {
-                        this.fetching_location = true;
-                        // console.log("Fetching location...");
                         
+                        
+                        // console.log("Fetching location...");
+                        this.errors.server = ""
+                        
+                        this.fetching_location = true;
 
                         const position = await new Promise((resolve, reject) => {
                             navigator.geolocation.getCurrentPosition(resolve, reject);
                         });
+                        
+                        
 
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
@@ -237,8 +412,8 @@ import Tickets from "./Tickets.vue";
                         this.userLocation2 = [lat, lng];
                         this.center = [lat, lng];
 
-                        console.log("Latitude:", lat, "Longitude:", lng);
-
+                        // console.log("Latitude:", lat, "Longitude:", lng);
+                        this.getMyTicketRange()
                         // Call reverse geocoding function
                         // await this.getAddress(lat, lng);
                         // console.log("Location fully loaded.");
@@ -288,6 +463,8 @@ import Tickets from "./Tickets.vue";
                 this.data.userLocation = [event.target.getLatLng().lat, event.target.getLatLng().lng];
                 this.userLocation2 = [event.target.getLatLng().lat, event.target.getLatLng().lng];
                 this.center = this.data.userLocation;
+                this.getMyTicketRange()
+                // this.getAddress(event.target.getLatLng().lat, event.target.getLatLng().lng);
                 // this.$swal({
                 //     title: "Are you sure?",
                 //     text: "You changed your pinned location, are you sure you want to change it?",
@@ -336,7 +513,10 @@ import Tickets from "./Tickets.vue";
             },
             submitReport(){
                 var self = this
-                
+                if(self.tickets && self.tickets.pending_ticket.length > 0){
+                    self.errors.server = "You have an active ticket."
+                    return;
+                }
                 Object.keys(this.data).forEach((field) => this.validateField(field));
 
                 if (Object.values(this.errors).some((error) => error)) {
@@ -347,7 +527,8 @@ import Tickets from "./Tickets.vue";
 
                 const rawData = self.data
                 self.curr_datetime = new Date();
-                const userDeviceID = self.getDeviceId()
+                
+                const userDeviceID = this.$route.query.token && this.messengerID ? this.messengerID : self.getDeviceId()
 
                 rawData.latitude = rawData.userLocation[0]
                 rawData.longitude = rawData.userLocation[1]
@@ -359,8 +540,12 @@ import Tickets from "./Tickets.vue";
                     name: rawData.name,
                     address: address2,
                     mobile: rawData.mobile,
-                    latitude: rawData.latitude.toString(),
-                    longitude: rawData.longitude.toString(),
+                    location:{
+                        type: "Point",
+                        coordinates:[rawData.longitude,rawData.latitude]
+                    },
+                    // latitude: rawData.latitude.toString(),
+                    // longitude: rawData.longitude.toString(),
                     message: rawData.message,
                     uuid: userDeviceID.toString()
                 }
@@ -386,7 +571,7 @@ import Tickets from "./Tickets.vue";
                 //     if (result.isConfirmed) {
                         self.isLoading = true
                         
-                        axios.post(`http://${import.meta.env.VITE_API_URL}/ticket/create`, formData)
+                        axios.post(`${import.meta.env.VITE_API_URL}/ticket/create`, formData)
                         .then((response) => {
                             self.isSummary = true
                             // self.$swal({
@@ -482,8 +667,7 @@ import Tickets from "./Tickets.vue";
             },
             async getMyTicketHistory(){
                 const userDeviceID = this.getDeviceId()
-                
-                await fetch(`http://${import.meta.env.VITE_API_URL}/ticket/get_my_ticket/${userDeviceID}`)
+                await fetch(`${import.meta.env.VITE_API_URL}/ticket/get_my_ticket/${userDeviceID}`)
                 .then(response => response.json())
                 .then(data => {
                     this.tickets = data
@@ -491,9 +675,50 @@ import Tickets from "./Tickets.vue";
                 .catch(error => console.error("Error fetching address:", error));
                 
             },
-            
-            
-            
+            async getMyTicketRange(){
+                var self = this
+                // console.log("Range:" + this.data.userLocation)
+
+                const params = new URLSearchParams({
+                    longitude: this.data.userLocation[1],
+                    latitude: this.data.userLocation[0]
+                }).toString();
+                await fetch(`${import.meta.env.VITE_API_URL}/ticket/range/?${params}`)
+                .then(response => response.json())
+                .then(data => {
+                    self.tickets_in_range = data.ticket
+                    // console.log(data.ticket)
+                })
+                .catch(error => console.error("Error fetching address:", error));
+                
+            },
+            plotInRangeTickets(){
+                this.tickets_in_range.forEach(loc => {
+                    L.marker([loc[1], loc[0]]).addTo(map)
+                        .bindPopup(loc.text);
+                });
+            },
+            decryptAES(encryptedBase64, hexKey) {
+                const key = CryptoJS.enc.Hex.parse(hexKey);
+                const encryptedWordArray = CryptoJS.enc.Base64.parse(encryptedBase64);
+
+                // Extract IV (first 16 bytes = 4 words)
+                const iv = CryptoJS.lib.WordArray.create(encryptedWordArray.words.slice(0, 4), 16);
+
+                // Extract ciphertext (rest)
+                const ciphertext = CryptoJS.lib.WordArray.create(
+                    encryptedWordArray.words.slice(4),
+                    encryptedWordArray.sigBytes - 16
+                );
+
+                const decrypted = CryptoJS.AES.decrypt({ ciphertext }, key, {
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+
+                return decrypted.toString(CryptoJS.enc.Utf8);
+            }
         }
     }
 </script>
