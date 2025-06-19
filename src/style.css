@@ -51,7 +51,7 @@
     @apply tracking-wider inline-flex items-center py-3 px-3 leading-none text-xs lg:leading-none font-medium rounded-md min-w-44 justify-center focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply text-white bg-[#a82600] hover:bg-[#a82700f3] active:bg-[#a82700];
+    @apply text-white bg-[#22c55e] hover:bg-[#16a34a] active:bg-[#15803d];
   }
   .btn-secondary {
     @apply text-white bg-gray-500 hover:bg-gray-600 active:bg-gray-700;

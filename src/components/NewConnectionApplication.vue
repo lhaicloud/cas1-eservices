@@ -107,7 +107,76 @@
             <hr>
             <div class="text-left mx-auto mt-3 grid grid-cols-1 gap-3">
                 <span class="text-red-600 text-xs">* - Required fields</span>
+                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-x-3 gap-y-4">
+                  <div class="relative space-y-1">
+                    <select
+                      id="service_type"
+                      v-model="application.service_type"
+                      class="peer block w-full border rounded-md px-3 pt-3 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 uppercase"
+                      placeholder=" "
+                    >
+                      <option disabled value="">Please Select</option>
+                      <option :value="service" v-for="service in services" :key="service.idservice1">{{ service.cfdescript }}</option>
+                    </select>
+                    <label              
+                      for="service_type"
+                      :class="[
+                        'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+                        application.service_type ? '-top-3 text-xs text-blue-500 bg-white' : 'top-1.5 text-sm bg-transparent'
+                      ]"
+                      class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                    >
+                      Service Type:
+                    </label>
+                  </div>
+
+                  <div class="relative space-y-1">
+                    <select
+                      id="individual"
+                      v-model="application.is_company"
+                      class="peer block w-full border rounded-md px-3 pt-3 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 uppercase"
+                      placeholder=" "
+                    >
+                      <option disabled value="">Please Select</option>
+                      <option :value="0">Individual</option>
+                      <option :value="1">Company</option>
+                    </select>
+                    <label
+                      for="individual"
+                      :class="[
+                        'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+                        application.is_company !== null && application.is_company !== undefined ? '-top-3 text-xs text-blue-500 bg-white' : 'top-1.5 text-sm bg-transparent'
+                      ]"
+                      class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                    >
+                      Individual or Company:
+                    </label>
+                  </div>
+
+                  <div class="relative space-y-1">
+                    <select
+                      id="classification"
+                      v-model="application.classification"
+                      class="peer block w-full border rounded-md px-3 pt-3 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 uppercase"
+                      placeholder=" "
+                    >
+                      <option disabled value="">Please Select</option>
+                      <option :value="'A'">Indigenous / Light Materials</option>
+                      <option :value="'B'">Concrete Residential / Commercial Building</option>
+                      <option :value="'C'">Construction / Special Lightning</option>
+                    </select>
+                    <label
+                      for="classification"
+                      :class="[
+                        'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+                        application.classification ? '-top-3 text-xs text-blue-500 bg-white' : 'top-1.5 text-sm bg-transparent'
+                      ]"
+                      class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                    >
+                      Classification:
+                    </label>
+                  </div>
                     
                     <!-- <div class="flex items-center space-x-4 justify-center md:col-span-3">
                       <div>
@@ -278,7 +347,7 @@
                         ]"
                         class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
                       >
-                        Name of Company/Corporation <span class="text-red-600 text-xs">*</span>
+                        Name of Company <span class="text-red-600 text-xs">*</span>
                       </label>
                     </div>
                     <div class="relative space-y-1">
@@ -315,7 +384,7 @@
                         placeholder=" "
                       >
                         <option disabled value="">Please select</option>
-                        <option :value="brgy" v-for="brgy in brgys1" :key="brgy.idpsgc">{{ brgy.name }}</option>
+                        <option :value="brgy" v-for="brgy in brgys1" :key="brgy.idbgy">{{ brgy.cfdescript }}</option>
                       </select>
                       <label
                         for="applicant_barangay"
@@ -350,18 +419,18 @@
                         Zone/Street/Sitio/Block <span class="text-red-600 text-xs">*</span>
                       </label>
                     </div>
-                    <div class="md:col-span-3">
-                      <div class="relative">
+                    <div class="md:col-span-3 grid grid-cols-3 gap-3">
+                      <div class="relative col-span-3 flex items-center ">
                         <input type="checkbox" id="same_address" v-model="application.same_address" class="mr-2"/>
-                        <label for="same_address" class="text-sm ml-2 mt-1">Same as the above address</label><br>
+                        <label for="same_address" class="text-sm ml-2">Service Address is same as the above address</label>
                       </div>
-                      <div v-if="application.same_address" class="text-xs text-gray-500">If checked, the service address will be the same as the applicant's address.</div>
-                      <div v-if="!application.same_address" class="text-xs text-gray-500">If not checked, please fill out the service address below.</div>
-                      
-                      <div v-if="!application.same_address" class="space-y-4">
-                        <h1 class="mt-2 text-xs">Location of Premises/Bldg. Applied for Serv. Conn. <span class="text-red-600 text-xs">*</span></h1>
+                      <div v-if="application.same_address" class="text-[0.6rem] text-gray-500 col-span-3">If checked, the service address will be the same as the applicant's address.</div>
+                      <div v-if="!application.same_address" class="text-[0.6rem] leading-none text-gray-500 col-span-3">If not checked, please fill out the service address below.</div>
+                      <h1 v-if="!application.same_address" class="text-xs col-span-3">Location of Premises/Bldg. Applied for Serv. Conn. <span class="text-red-600 text-xs">*</span></h1>
+                        
+                      <!-- <div v-if="!application.same_address" class="space-y-4"> -->
                         <!-- Municipality -->
-                        <div class="relative space-y-1">
+                        <div class="relative space-y-1 col-span-3 md:col-span-1" v-if="!application.same_address">
                           <select
                             id="service_municipality"
                             class="peer block w-full border rounded-md px-3 pt-3 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 uppercase"
@@ -385,7 +454,7 @@
                         </div>
 
                         <!-- Barangay -->
-                        <div class="relative space-y-1">
+                        <div class="relative space-y-1 col-span-3 md:col-span-1" v-if="!application.same_address">
                           <select
                             :disabled="!application.service_municipality"
                             id="service_barangay"
@@ -395,7 +464,7 @@
                             required
                           >
                             <option disabled value="">Please select</option>
-                            <option :value="brgy" v-for="brgy in brgys2" :key="brgy.idpsgc">{{ brgy.name }}</option>
+                            <option :value="brgy" v-for="brgy in brgys2" :key="brgy.idbgy">{{ brgy.cfdescript }}</option>
                           </select>
                           <label
                             for="service_barangay"
@@ -410,7 +479,7 @@
                         </div>
 
                         <!-- Zone/Street/Sitio/Block -->
-                        <div class="relative space-y-1 md:col-span-2">
+                        <div class="relative space-y-1 col-span-3 md:col-span-1" v-if="!application.same_address">
                           <input
                             type="text"
                             id="zone2"
@@ -431,13 +500,13 @@
                             Zone/Street/Sitio/Block <span class="text-red-600 text-xs">*</span>
                           </label>
                         </div>
-                      </div>
+                      <!-- </div> -->
                     </div>
-                    <div v-if="application.is_company" class="md:col-span-3 relative">
+                    <div class="md:col-span-3 relative">
                         <input type="checkbox" id="spa" v-model="application.spa" class="mr-2"/>
                         <label for="spa" class="ml-3 mt-1.5 text-xs">W/ SPA</label>
                     </div>
-                    <div v-if="application.spa && application.is_company" class="relative space-y-1">
+                    <div v-if="application.spa" class="relative space-y-1">
                       <input
                         id="authorized_signatory_name"
                         type="text"
@@ -455,12 +524,12 @@
                         ]"
                         class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
                       >
-                        Name of Authorized Signatory <span class="text-red-600 text-xs">*</span>
+                        Name <span class="text-red-600 text-xs">*</span>
                       </label>
                     </div>
 
                     <!-- Authorized Signatory Address -->
-                    <div v-if="application.spa && application.is_company" class="relative space-y-1 md:col-span-2 mt-4">
+                    <div v-if="application.spa" class="relative space-y-1 md:col-span-2">
                       <input
                         id="authorized_signatory_address"
                         type="text"
@@ -478,7 +547,7 @@
                         ]"
                         class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
                       >
-                        Address of Authorized Signatory <span class="text-red-600 text-xs">*</span>
+                        Address <span class="text-red-600 text-xs">*</span>
                       </label>
                     </div>
                     <div class="grid md:grid-cols-3 md:col-span-3 gap-x-2 gap-y-4  mt-2">
@@ -525,12 +594,9 @@
                         </label>
                       </div>
                       <div class="relative space-y-1">
-                        <div class="flex items-center">
-                          <span
-                            class="text-sm top-[0.80rem] left-3 absolute"
-                          >
-                            +63
-                          </span>
+                        <div class="relative flex items-center">
+                          <span class="text-sm top-[0.80rem] left-3 absolute">+63</span>
+
                           <input
                             type="tel"
                             id="contact_no"
@@ -541,13 +607,10 @@
                             required
                             class="peer block w-full border rounded-md px-3 pt-3 pb-1.5 pl-12 text-sm placeholder-transparent focus:outline-none focus:ring-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                           />
+
                           <label
                             for="contact_no"
-                            :class="[
-                              'absolute left-12 px-1 transition-all duration-200 ease-in-out text-gray-500',
-                              application.contact_no ? '-top-2 text-xs text-blue-500 bg-white' : 'top-3 text-sm bg-transparent'
-                            ]"
-                            class="peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                            class="absolute -top-2 left-3 px-1 text-xs text-gray-500 bg-white transition-all duration-200 ease-in-out peer-focus:text-blue-500"
                           >
                             Contact No. <span class="text-red-600 text-xs">*</span>
                           </label>
@@ -573,7 +636,7 @@
                           ]"
                           class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
                         >
-                          Email
+                          Email <span class="text-red-600 text-xs">*</span>
                         </label>
                       </div>
                       <!-- <div v-if="!application.is_company">
@@ -617,15 +680,48 @@
             <application-submitted :application="application"></application-submitted>
           </div>
 
-          <button class="btn btn-primary" @click="next()" v-if="application.step < 4">Next</button>
-          <button class="btn btn-primary" @click="submitApplication()" v-if="application.step == 4 && !application.submitted_at" :disabled="!application.is_agree_term">Submit</button>
-          <button class="btn btn-warning" v-if="application.step == 4 && application.submitted_at" @click="updateApplication()">Update</button>
-          <div class="mt-3" v-if="application.step < 5">
-            <button class="btn btn-white" @click="back()">Back</button>
-          </div>
+          <div class="flex flex-col-reverse md:flex-row justify-between gap-2 mt-4 max-w-4xl mx-auto">
+              <!-- Left buttons -->
+              <div class="flex flex-col md:flex-row justify-start items-center gap-2 w-full md:w-auto">
+                <button class="btn btn-white mx-1 w-full md:w-auto" @click="back()" v-if="application.step < 5 && application.step > 1">&lt; Back</button>
+                <button class="btn btn-primary justify-center mx-1 w-full md:w-auto"
+                        @click="newApplication()" 
+                        :disabled="!application.service_type && !application.is_company && !application.classification"
+                        v-if="application.submitted_at && application.step >= 5">New Application</button>
+                <button class="btn btn-secondary mx-1 w-full md:w-auto"
+                        @click="viewExistingApplication()" 
+                        v-if="application.step == 1">I Have Existing Application</button>
+              </div>
+
+              <!-- Right buttons -->
+              <div class="flex flex-col md:flex-row justify-end items-center gap-2 w-full md:w-auto">
+                <!-- <button class="btn btn-white mx-1 w-full md:w-auto"
+                        v-if="application.lname != null && (application.dfapply && application.dfapply == '0000-00-00') && application.step == 1" 
+                        @click="continueApplication()">Continue Application</button> -->
+                <button class="btn btn-primary mx-1 w-full md:w-auto" 
+                        @click="next()" v-if="application.step < 4">Next</button>
+                <button class="btn btn-primary mx-1 w-full md:w-auto" 
+                        @click="submitApplication()" 
+                        v-if="application.step == 4 && !application.submitted_at" 
+                        :disabled="!application.is_agree_term">Submit</button>
+                <button class="btn btn-warning mx-1 w-full md:w-auto" 
+                        v-if="application.step == 4 && application.submitted_at" 
+                        @click="updateApplication()">Update</button>
+                <button class="btn btn-white mx-1 w-full md:w-auto" @click="application.step = 1" v-if="application.step == 5">Edit Application</button>
+              </div>
+            </div>
+
+
+          
+
+          
+          
+          <!-- <div class="mt-3" v-if="application.step < 5"> -->
+            <!-- <button class="btn btn-white" @click="back()">Back</button> -->
+          <!-- </div> -->
 
           <!-- <button class="btn btn-white" @click="back()">Back</button> -->
-          <button class="btn btn-white" @click="application.step = 1" v-if="application.step == 5">Edit Application</button>
+          
          
       </div>
       
@@ -671,6 +767,11 @@ import { mapState } from 'vuex';
         brgys1: [],
         brgys2: [],
         showModal: false,
+        services:[
+          { cfdescript: "NEW CONNECTION", cfnewconnect: "YES", idservice1: 1 },
+          { cfdescript: "RELOCATION", cfnewconnect: "NO", idservice1: 8 },
+          { cfdescript: "EXTENSION / ADDITIONAL CONNECTION", cfnewconnect: "NO", idservice1: 6 },
+        ]
       };
     },
     computed: {
@@ -678,10 +779,10 @@ import { mapState } from 'vuex';
         return `${(this.application.step - 1) / 3 * 100}%`;
       },
       applicant_address(){
-        return this.application.applicant_zone + ', ' + this.application.applicant_barangay.name.toUpperCase()  + ", " + this.application.applicant_municipality.name.toUpperCase()
+        return this.application.applicant_zone + ', ' + this.application.applicant_barangay.cfdescript.toUpperCase()  + ", " + this.application.applicant_municipality.name.toUpperCase()
       },
       service_address(){
-        return this.application.same_address ? this.applicant_address : this.application.service_zone + ', ' + this.application.service_barangay.name.toUpperCase() + ", " + this.application.service_municipality.name.toUpperCase()
+        // return this.application.same_address ? this.applicant_address : this.application.service_zone + ', ' + this.application.service_barangay.cfdescript.toUpperCase() + ", " + this.application.service_municipality.name.toUpperCase()
       },
       visibleSteps() {
         const allSteps = [
@@ -806,7 +907,11 @@ import { mapState } from 'vuex';
           this.application.service_municipality = this.application.applicant_municipality
           this.application.service_barangay = this.application.applicant_barangay
         }else{
-          this.application.service_address = this.service_address;
+          const zone = this.application.service_zone || '';
+          const barangay = this.application.service_barangay?.cfdescript?.toUpperCase() || '';
+          const municipality = this.application.service_municipality?.name?.toUpperCase() || '';
+
+          this.application.service_address = `${zone}, ${barangay}, ${municipality}`;
         }
 
         this.errorFields = []
@@ -815,6 +920,7 @@ import { mapState } from 'vuex';
           lname: "Last Name",
           service_address: "Service Address",
           contact_no: "Contact Number",
+          email: "Email Address",
           service_barangay: "Service Barangay",
           service_municipality: "Service Municipality",
           service_zone: "Service Zone/Sitio/Street",
@@ -859,7 +965,19 @@ import { mapState } from 'vuex';
         const missingFields = Object.keys(requiredFields).filter(
           (key) => !this.application[key]
         );
+        console.log(missingFields)
+        // ✅ Validate age: at least 18 years old
+        if (!this.application.is_company && this.application.birthdate) {
+          const birthDate = new Date(this.application.birthdate);
+          const today = new Date();
+          const age = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
 
+          if (age < 18 || (age === 18 && m < 0) || (age === 18 && m === 0 && today.getDate() < birthDate.getDate())) {
+            missingFields.push("birthdate");
+          }
+        }
+        
         if (missingFields.length > 0) {
           this.errorFields = missingFields.map((key) => `• ${requiredFields[key]}`);
           nextTick(() => {
@@ -884,8 +1002,8 @@ import { mapState } from 'vuex';
 
           const isNoElectricianSelected = electrician_id == null && no_electrician == 0;
           const isElectricianFromOtherArea = electrician && electrician.cfareacode !== service_cfareacode;
-          console.log(isNoElectricianSelected)
-          console.log(isElectricianFromOtherArea)
+          // console.log(isNoElectricianSelected)
+          // console.log(isElectricianFromOtherArea)
           if (isNoElectricianSelected || isElectricianFromOtherArea) {
             alert("Please select an electrician in your area.");
             return;
@@ -904,7 +1022,7 @@ import { mapState } from 'vuex';
         if(this.application.step > 1){
           this.application.step -= 1;
         }else{
-          this.$router.push({ name: "ElectricalServiceApplication"});
+          this.$router.push({ name: "Home"});
         }
       },
       async submitApplication(){
@@ -977,19 +1095,32 @@ import { mapState } from 'vuex';
           }) // Use the JSON data
           .catch(error => console.error("Error loading JSON:", error));
       },
-      getBrgy(){
-          var self = this
-          
-          // console.log(self.application.applicant_municipality)
-          // self.application.applicant_barangay = null
+      async getBrgy(){
+          const cftowncode = this.application.applicant_municipality.cfareacode;
+          const apiUrl = `${import.meta.env.VITE_CIMS_API_URL}/api/bgy/get?cftowncode=${encodeURIComponent(cftowncode)}`;
 
-          self.brgys1 = self.psgcData.filter((psgc) => psgc.geo_code.startsWith(self.application.applicant_municipality.geo_code.substring(0, 6)) && psgc.geo_level == 'Bgy').sort((a, b) => a.name.localeCompare(b.name))
-          // self.application.applicant_barangay = self.brgys1.find((b1) => b1.idpsgc == self.application.applicant_barangay.idpsgc);
+          try {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            this.brgys1 = data
+          } catch (error) {
+            console.error("Error loading JSON:", error);
+          }
+          // self.brgys1 = self.psgcData.filter((psgc) => psgc.geo_code.startsWith(self.application.applicant_municipality.geo_code.substring(0, 6)) && psgc.geo_level == 'Bgy').sort((a, b) => a.name.localeCompare(b.name))
+          
       },
-      getBrgy2(){
-          var self = this
-          self.brgys2 = self.psgcData.filter((psgc) => psgc.geo_code.startsWith(self.application.service_municipality.geo_code.substring(0, 6)) && psgc.geo_level == 'Bgy').sort((a, b) => a.name.localeCompare(b.name))
-          // self.application.service_barangay = self.brgys2.find((b1) => b1.idpsgc == self.application.service_barangay.idpsgc);
+      async getBrgy2(){
+          const cftowncode = this.application.service_municipality.cfareacode;
+          const apiUrl = `${import.meta.env.VITE_CIMS_API_URL}/api/bgy/get?cftowncode=${encodeURIComponent(cftowncode)}`;
+
+          try {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            this.brgys2 = data
+          } catch (error) {
+            console.error("Error loading JSON:", error);
+          }
+          // self.brgys2 = self.psgcData.filter((psgc) => psgc.geo_code.startsWith(self.application.service_municipality.geo_code.substring(0, 6)) && psgc.geo_level == 'Bgy').sort((a, b) => a.name.localeCompare(b.name))
       },
       scrollToActiveStep() {
         if (
@@ -1104,13 +1235,20 @@ import { mapState } from 'vuex';
           .then(response => response.json())
           .then(data => {
             this.application = data[0]
-            console.log(this.application)
+            // console.log(this.application)
           })
           .catch(error => {
             console.error('Error loading JSON:', error);
           });
         }
       },
+      viewExistingApplication(){
+        this.$router.push({ name: "ViewExistingApplication"});
+      },
+      newApplication(){
+        this.$store.commit('resetApplication');
+        this.$router.go();
+      }
       
     },
     created() {
@@ -1119,9 +1257,9 @@ import { mapState } from 'vuex';
     },
     mounted() {
       this.getElectricians();
-      if(!this.application.service_type){this.$router.push({ name: "ElectricalServiceApplication"});}
+      // if(!this.application.service_type){this.$router.push({ name: "ElectricalServiceApplication"});}
       this.scrollToActiveStep()
-      console.log(this.application)
+      // console.log(this.application)
     },
   };  
 </script>

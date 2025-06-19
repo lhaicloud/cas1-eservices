@@ -1,7 +1,7 @@
 <template>
     <div class="justify-center flex items-center min-h-screen w-full text-white text-xs lg:text-base px-5">
       <div>
-        <div class="space-y-3">
+        <!-- <div class="space-y-3">
           <div class="bg-white text-gray-800 rounded-lg pb-5 px-5 py-5 space-y-5">
             <div class="relative space-y-1">
               <select
@@ -11,9 +11,9 @@
                 placeholder=" "
               >
                 <option disabled value="">Please Select</option>
-                <option :value="service" v-for="service in services" :key="service.id">{{ service.cfdescript }}</option>
+                <option :value="service" v-for="service in services" :key="service.idservice1">{{ service.cfdescript }}</option>
               </select>
-              <label
+              <label              
                 for="service_type"
                 :class="[
                   'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
@@ -72,12 +72,12 @@
               </label>
             </div>
           </div>
-        </div>
+        </div> -->
         <div class="grid grid-cols-1 md:flex justify-center items-center gap-2 mt-5">
           <button class="btn btn-primary justify-center" @click="proceed()" v-if="!application.submitted_at">Proceed</button>
           <button class="btn btn-primary justify-center" @click="newApplication()" :disabled="!application.service_type && !application.is_company && !application.classification" v-if="application.submitted_at">New Application</button>
 
-          <button class="btn btn-white" v-if="application.lname != null && !application.dfapply" @click="continueApplication()">Continue Application</button>
+          <button class="btn btn-white" v-if="application.lname != null && (application.dfapply && application.dfapply == '0000-00-00')" @click="continueApplication()">Continue Application</button>
           <button class="btn btn-white" @click="viewExistingApplication()">I Have Existing Application</button>
         </div>
       </div>
@@ -96,9 +96,9 @@
         selectedClassification: null,
         // application: this.$store.state.application,
         services:[
-          { cfdescript: "New Connection", cfnewconnect: "YES" },
-          { cfdescript: "Relocation", cfnewconnect: "NO" },
-          { cfdescript: "Extension / Additional Connection", cfnewconnect: "NO" },
+          { cfdescript: "NEW CONNECTION", cfnewconnect: "YES", idservice1: 1 },
+          { cfdescript: "RELOCATION", cfnewconnect: "NO", idservice1: 8 },
+          { cfdescript: "EXTENSION / ADDITIONAL CONNECTION", cfnewconnect: "NO", idservice1: 6 },
         ]
       };
     },
@@ -152,7 +152,7 @@
     },
     mounted() {
       // console.log(this.$store.state.application);
-      if(this.application.dfapply){
+      if(this.application.dfapply && this.application.dfapply != '0000-00-00'){
         this.$store.commit('resetApplication');
       }
     },

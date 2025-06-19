@@ -6,7 +6,7 @@
         <div class="grid grid-cols-1 md:w-1/2 lg:w-1/3 mx-auto gap-3 px-10">
             <router-link :to="{name: 'ReportBrownout'}" class="btn btn-primary justify-center">Report A Brownout</router-link>
             <!-- <router-link :to="{name: 'BillInquiry'}" class="btn btn-primary justify-center">Bill Inquiry</router-link> -->
-            <router-link :to="{name: 'ElectricalServiceApplication'}" class="btn btn-primary justify-center">Electrical Service</router-link>
+            <router-link :to="{name: 'NewConnectionApplication'}" class="btn btn-primary justify-center">Electrical Service</router-link>
         </div>
       </div>
     </div>

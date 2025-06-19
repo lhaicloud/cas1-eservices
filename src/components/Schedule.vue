@@ -4,7 +4,7 @@
         <button class="text-gray-600 hover:text-black float-left" @click="back()">
         &lt;
         </button>
-        <h1 class="mb-2 font-medium">Schedule</h1>
+        <h1 class="mb-2 font-medium">Pre-Membership Seminar Schedule</h1>
     </div>
     <hr />
     <div class="text-center mt-3">

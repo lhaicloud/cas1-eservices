@@ -95,7 +95,7 @@
               }}</span>
             </div>
             <div class="md:col-span-3">
-              <h1 class="font-medium">Schedule</h1>
+              <h1 class="font-medium">Pre-Membership Seminar Schedule</h1>
               <div class="md:grid grid-cols-3">
                 <div class="mt-2">
                   <h1>Date</h1>

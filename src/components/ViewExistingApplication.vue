@@ -2,7 +2,8 @@
     <div class="justify-center text-center flex items-center min-h-screen w-full text-white text-xs lg:text-base p-5">
      
         <div class="w-full md:max-w-xl">
-            <div class="bg-white text-gray-800 rounded-lg px-5 py-10 flex items-center ">
+            <div class="bg-white text-gray-800 rounded-lg px-5 py-10 flex flex-col items-center space-y-2 ">
+                <h4>Plase enter your Reference Number:</h4>
                 <div class="w-full relative space-y-1">
                     <input
                     id="refno"
@@ -26,9 +27,9 @@
                     </label>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:flex justify-center items-center gap-2 mt-5">
-                <button class="btn btn-primary" @click="findReferenceNumber()">Submit</button>
+            <div class="flex flex-col-reverse md:flex-row justify-center gap-2 mt-5">
                 <button class="btn btn-white" @click="back()">Back</button>
+                <button class="btn btn-primary" @click="findReferenceNumber()">Submit</button>
             </div>
         </div>
     </div>

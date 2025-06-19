@@ -20,7 +20,6 @@ const getDefaultApplication = () => ({
 export default new Vuex.Store({
   plugins: [createPersistedState()],
   state: {
-    message: "Hello Vuex!",
     application: {
       service_type: null,
       is_agree_term: false,

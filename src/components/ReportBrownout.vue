@@ -53,7 +53,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 
                             </l-map>
                         </div>
-                        <div class="space-y-1">
+                        <div class="space-y-1 relative">
                             <div class="space-x-2">
                                 <input type="radio" id="inlineRadio1" name="inlineRadio" value="current" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
                                 <label for="inlineRadio1">Get my current location</label>
