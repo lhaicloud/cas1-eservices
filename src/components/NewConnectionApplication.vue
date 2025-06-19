@@ -127,7 +127,7 @@
                       ]"
                       class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
                     >
-                      Service Type:
+                      Service Type: <span class="text-red-600 text-xs">*</span>
                     </label>
                   </div>
 
@@ -150,7 +150,7 @@
                       ]"
                       class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
                     >
-                      Individual or Company:
+                      Individual or Company: <span class="text-red-600 text-xs">*</span>
                     </label>
                   </div>
 
@@ -174,7 +174,7 @@
                       ]"
                       class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
                     >
-                      Classification:
+                      Classification: <span class="text-red-600 text-xs">*</span>
                     </label>
                   </div>
                     
@@ -916,6 +916,9 @@ import { mapState } from 'vuex';
 
         this.errorFields = []
         const requiredFields = {
+          service_type: "Service Type",
+          is_company: "Individual or Company",
+          classification: "Classification",
           fname: "First Name",
           lname: "Last Name",
           service_address: "Service Address",
@@ -963,7 +966,7 @@ import { mapState } from 'vuex';
         }
 
         const missingFields = Object.keys(requiredFields).filter(
-          (key) => !this.application[key]
+          (key) => this.application[key] === null || this.application[key] === undefined || this.application[key] === ''
         );
         console.log(missingFields)
         // ✅ Validate age: at least 18 years old
