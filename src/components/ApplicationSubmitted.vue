@@ -1,12 +1,11 @@
 <template>
-    <div class="bg-white text-gray-800 rounded-lg pb-5 px-5 pt-3 overflow-auto">
+    <div class="bg-white text-gray-800 rounded-lg pb-5 px-10 pt-3 overflow-auto">
         
         <h1 class="text-lg font-bold mt-5">
             Application {{ title}}
         </h1>
         <p class="mt-5 text-justify">
-            Your application has been {{ title.toLocaleLowerCase() }}. Kindly ensure that all required documents are prepared prior to your scheduled date. 
-            Please arrive on time. Your Reference Number is <span class="font-medium">{{ application.reference_number }}.</span>
+            Thank you for your submission. An email has been sent to you with the attached form. Please ensure all required documents are ready before your scheduled appointment. We kindly ask that you arrive on time. Your Reference Number is <span class="font-medium">{{ application.reference_number }}.</span>
         </p>
         <div class="flex justify-center mt-5">
             <svg ref="barcode"></svg>
@@ -35,13 +34,13 @@
                 <li>Electrical Inspection Report</li>
             </ul>
         </div>
-        <button class="btn btn-primary mt-5" @click="downloadForms()" v-if="!application.dfapply || application.dfapply == '0000-00-00'">
+        <!-- <button class="btn btn-primary mt-5" @click="downloadForms()" v-if="!application.dfapply || application.dfapply == '0000-00-00'">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" /></svg>
             <span class="ml-1">Download Forms</span>
-        </button>
-        <p class="text-xs text-red-400 text-center p-2" v-if="isMessengerBrowser">Looks like you’re in Messenger. To download the file, open this link in your phone’s browser (like Chrome or Safari).</p>
+        </button> -->
+        <!-- <p class="text-xs text-red-400 text-center p-2" v-if="isMessengerBrowser">Looks like you’re in Messenger. To download the file, open this link in your phone’s browser (like Chrome or Safari).</p> -->
         
-        <p class="text-xs text-center mt-5">Date Submitted: {{ application.submitted_at }}</p>
+        <!-- <p class="text-xs text-center mt-5">Date Submitted: {{ application.submitted_at }}</p> -->
             
     </div>
 </template>
@@ -96,7 +95,7 @@ export default {
                 },
             ],
             errorMessage: '',
-            isMessengerBrowser: false
+            // isMessengerBrowser: false
         }
     },
     computed:{
@@ -117,10 +116,10 @@ export default {
             displayValue: true
           });
     }, 100);
-    if (navigator.userAgent.includes("FBAN") || navigator.userAgent.includes("FBAV")) {
-        this.isMessengerBrowser = true;
-        return;
-    }
+    // if (navigator.userAgent.includes("FBAN") || navigator.userAgent.includes("FBAV")) {
+    //     this.isMessengerBrowser = true;
+    //     return;
+    // }
   },
   methods: {
         async downloadForms() {
