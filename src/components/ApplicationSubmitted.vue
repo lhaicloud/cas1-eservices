@@ -5,7 +5,9 @@
             Application {{ title}}
         </h1>
         <p class="mt-5 text-justify">
-            Thank you for your submission. An email has been sent to you with the attached form. Please ensure all required documents are ready before your scheduled appointment. We kindly ask that you arrive on time. Your Reference Number is <span class="font-medium">{{ application.reference_number }}.</span>
+            Your application has been successfully submitted. A confirmation email, including the necessary form, has been sent to your provided email address. 
+            Please ensure that all required documents are complete and ready prior to your scheduled appointment. We kindly ask that you arrive on time. 
+            Your Reference Number is <span class="font-medium">{{ application.reference_number }}.</span>
         </p>
         <div class="flex justify-center mt-5">
             <svg ref="barcode"></svg>
