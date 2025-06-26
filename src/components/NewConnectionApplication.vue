@@ -638,6 +638,9 @@
                         >
                           Email <span class="text-red-600 text-xs">*</span>
                         </label>
+                        <div class="text-[0.6rem] text-gray-500 col-span-3">
+                          Please provide a valid email. We'll use it to send you application updates and confirmations.
+                        </div>
                       </div>
                       <!-- <div v-if="!application.is_company">
                         <label for="male">Sex</label>

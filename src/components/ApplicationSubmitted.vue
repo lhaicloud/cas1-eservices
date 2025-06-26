@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white text-gray-800 rounded-lg pb-5 px-10 pt-3 overflow-auto">
+    <div class="bg-white text-gray-800 rounded-lg pb-5 px-5 pt-3 overflow-auto">
         
         <h1 class="text-lg font-bold mt-5">
             Application {{ title}}
