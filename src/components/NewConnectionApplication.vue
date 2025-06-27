@@ -693,7 +693,7 @@
                         v-if="application.submitted_at && application.step >= 5">New Application</button>
                 <button class="btn btn-secondary mx-1 w-full md:w-auto"
                         @click="viewExistingApplication()" 
-                        v-if="application.step == 1">I Have Existing Application</button>
+                        v-if="application.step == 1">I Have An Existing Application</button>
               </div>
 
               <!-- Right buttons -->
