@@ -78,6 +78,7 @@
 
 <script>
 import debounce from "lodash/debounce";
+import axios from 'axios'
 
 export default {
   props: ["application"],
@@ -85,59 +86,14 @@ export default {
     return {
       currentDate: new Date(),
       // application: this.$store.state.application,
-      availableDates: [
-        {
-          date: "2025-06-06",
-          time: "9:00 AM - 12:00 NN / 1:00 PM - 5:00 PM",
-          location: "MAIN OFFICE",
-        },
-        {
-          date: "2025-06-13",
-          time: "9:00 AM - 12:00 NN / 1:00 PM - 5:00 PM",
-          location: "MAIN OFFICE",
-        },
-        {
-          date: "2025-06-20",
-          time: "9:00 AM - 12:00 NN",
-          location: "CAMALIGAN AREA OFFICE",
-        },
-        {
-          date: "2025-06-27",
-          time: "1:00 PM - 5:00 PM",
-          location: "MAIN OFFICE",
-        },
-        {
-          date: "2025-06-25",
-          time: "9:00 AM - 12:00 NN / 1:00 PM - 5:00 PM",
-          location: "MAIN OFFICE",
-        },
-        {
-          date: "2025-06-02",
-          time: "1:00 PM - 5:00 PM",
-          location: "LUPI SPORTS COMPLEX",
-        },
-        {
-          date: "2025-05-30",
-          time: "1:00 PM - 5:00 PM",
-          location: "MAIN OFFICE",
-        },
-        {
-          date: "2025-05-16",
-          time: "1:00 PM - 5:00 PM",
-          location: "MAIN OFFICE",
-        },
-        {
-          date: "2025-05-23",
-          time: "1:00 PM - 5:00 PM",
-          location: "MAIN OFFICE",
-        },
-      ],
+      availableDates: [],
     };
   },
   created(){
     if(this.application.selectedDate){
       this.currentDate = new Date(this.application.selectedDate.date);
     }
+    this.getAvailableDates();
   },
   watch: {
     application: {
@@ -254,6 +210,25 @@ export default {
     },
     back(){
       this.$emit('back');
+    },
+    getAvailableDates(){
+      this.$store.commit("setLoading", true);
+      this.availableDates = [];
+      axios.get(`${import.meta.env.VITE_CIMS_API_URL}/api/consumer-services/online-application/getAvailableDates`)
+        .then((response) => {
+          if (response.data.length > 0) {
+            this.availableDates = response.data;
+          } else {
+            alert("No available dates found.");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          alert("Error fetching available dates.");
+        })
+        .finally(() => {
+          this.$store.commit("setLoading", false);
+        });
     }
   },
 };
