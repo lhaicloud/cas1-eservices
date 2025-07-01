@@ -38,7 +38,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                         </div>
                         <div v-if="fetching_location && !data.userLocation && locationType == 'current'" class="text-center my-3">Please wait, Fetching Location...</div>
                         <div v-if="locationType == 'current' && !fetching_location && data.userLocation">
-                            <l-map :zoom="zoom" :center="center" @ready="onMapReady" class=" h-36 md:h-48 w-full rounded"  ref="map">
+                            <l-map :zoom="zoom" :center="center" @ready="onMapReady" class=" h-36 md:h-48 w-full rounded z-0"  ref="map">
                                 <l-tile-layer :url="tileLayerUrl" />
                                 <l-marker v-if="data.userLocation" :zIndexOffset="1000"  :lat-lng="data.userLocation" :draggable="true" @moveend="updateLocation">
                                     <l-popup>Drag me to change location</l-popup>
@@ -570,7 +570,6 @@ import CryptoJS from 'crypto-js';
                 // }).then((result) => {
                 //     if (result.isConfirmed) {
                         self.isLoading = true
-                        
                         axios.post(`${import.meta.env.VITE_API_URL}/ticket/create`, formData)
                         .then((response) => {
                             self.isSummary = true

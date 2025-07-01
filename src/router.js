@@ -42,7 +42,7 @@ const routes = [
     component: () => import("./components/NewConnectionApplicationRequirements.vue")
   },
   {
-    path: "/electrical-service-application/existing-application",
+    path: "/existing-application",
     name: "ViewExistingApplication",
     component: () => import("./components/ViewExistingApplication.vue")
   },
