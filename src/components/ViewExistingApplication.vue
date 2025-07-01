@@ -79,7 +79,7 @@ import axios from 'axios';
                 });
             },
             back(){
-                this.$router.push({ name: "ElectricalServiceApplication"});
+                this.$router.push({ name: "NewConnectionApplication"});
             }
         }
     }
