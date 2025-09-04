@@ -40,7 +40,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                         <div class="text-center" v-if="!isGrantedLocation && !fetching_location">
                             <button class="btn btn-success " @click="getLocation()">Allow Location Access</button>
                         </div>
-                        <div v-if="!data.userLocation && !fetching_location" class="text-center my-3 bg-red-100 p-1 text-red-700">No Location Data</div>
+                        <div v-if="!data.userLocation && !fetching_location && isGrantedLocation" class="text-center my-3 bg-red-100 p-1 text-red-700">No Location Data</div>
                         <div v-if="fetching_location && !data.userLocation" class="text-center my-3">Please wait, Fetching Location...</div>
                         <div v-if="!fetching_location && data.userLocation">
 
