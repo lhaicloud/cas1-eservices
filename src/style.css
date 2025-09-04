@@ -9,8 +9,11 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    position: relative; /* Ensures ::before works properly */
+    min-height: 100vh; /* ensures it fills the viewport at minimum */
+    background-attachment: fixed; /* keeps it fixed when scrolling */
+    position: relative; /* ensures ::before works properly */
   }
+
 
   /* body{
     background-image: url('/images/bg.webp');
@@ -51,7 +54,7 @@
     @apply tracking-wider inline-flex items-center py-3 px-3 leading-none text-xs lg:leading-none font-medium rounded-md min-w-44 justify-center focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply text-white bg-[#22c55e] hover:bg-[#16a34a] active:bg-[#15803d];
+    @apply text-gray-800 bg-gray-300 border border-gray-400 hover:bg-gray-200 active:bg-gray-400;
   }
   .btn-secondary {
     @apply text-white bg-gray-500 hover:bg-gray-600 active:bg-gray-700;

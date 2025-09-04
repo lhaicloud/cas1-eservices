@@ -14,15 +14,19 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
             <div>
                 <div v-if="!isSummary" class="rounded-lg space-y-8 bg-white p-3">
                     <div class="space-y-2">
-                        <h3 class="font-bold text-center text-lg">Brownout Report</h3>
-                        <h3 class="text-center">Please provide the details below </h3>
+                        <h3 class="font-bold text-center text-lg py-3">Brownout Report</h3>
+                        <h3 class="text-center">Kindly fill in the details below. You may <span class="font-bold">drag the location icon</span> to mark your location. </h3>
                     </div>
                     <!-- <hr/> -->
                     <div class="space-y-3">
                         <div v-if="tickets && tickets.pending_ticket.length > 0" class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700">
                         <!-- <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700"> -->
                             You have an active ticket. Click here to view the details: 
-                            <router-link :to="{ name: 'TicketDetails', params: { data: tickets }}" class="text-blue-700 hover:underline cursor-pointer">View Ticket</router-link>
+                            <router-link :to="{ name: 'TicketDetails', params: { data: tickets, tab: 1 }}" class="text-blue-700 hover:underline cursor-pointer">View Ticket</router-link>
+                        </div>
+                        <div v-if="tickets && tickets.ticket_history.length > 0 && tickets.pending_ticket.length == 0" class="bg-blue-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700">
+                            You have {{ tickets.ticket_history.length }} resolved ticket{{ tickets.ticket_history.length !== 1 ? 's' : '' }} in the past 30 days. Click here to view the details: 
+                            <router-link :to="{ name: 'TicketDetails', params: { data: tickets, tab: 2 }}" class="text-blue-700 hover:underline cursor-pointer">View Tickets</router-link>
                         </div>
                         <!-- <div v-if="tickets && tickets.pending_ticket.length == 0" class="bg-red-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700"> -->
                         <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700" v-if="tickets_in_range.length > 0">
@@ -33,12 +37,14 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 <li v-for="error in errors" v-if="error"><small>{{ error }}</small></li>
                             </ul>
                         </div>
-                        <div class="text-center" v-if="!data.userLocation && locationType == 'current' && !fetching_location">
+                        <div class="text-center" v-if="!isGrantedLocation && !fetching_location">
                             <button class="btn btn-success " @click="getLocation()">Allow Location Access</button>
                         </div>
-                        <div v-if="fetching_location && !data.userLocation && locationType == 'current'" class="text-center my-3">Please wait, Fetching Location...</div>
-                        <div v-if="locationType == 'current' && !fetching_location && data.userLocation">
-                            <l-map :zoom="zoom" :center="center" @ready="onMapReady" class=" h-36 md:h-48 w-full rounded z-0"  ref="map">
+                        <div v-if="!data.userLocation && !fetching_location" class="text-center my-3 bg-red-100 p-1 text-red-700">No Location Data</div>
+                        <div v-if="fetching_location && !data.userLocation" class="text-center my-3">Please wait, Fetching Location...</div>
+                        <div v-if="!fetching_location && data.userLocation">
+
+                            <l-map :zoom="zoom" :center="center" @ready="onMapReady" class=" h-36 w-full rounded z-0"  ref="map">
                                 <l-tile-layer :url="tileLayerUrl" />
                                 <l-marker v-if="data.userLocation" :zIndexOffset="1000"  :lat-lng="data.userLocation" :draggable="true" @moveend="updateLocation">
                                     <l-popup>Drag me to change location</l-popup>
@@ -53,16 +59,24 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 
                             </l-map>
                         </div>
-                        <div class="space-y-1 relative">
-                            <div class="space-x-2">
-                                <input type="radio" id="inlineRadio1" name="inlineRadio" value="current" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
-                                <label for="inlineRadio1">Get my current location</label>
+                        <p class="text-xs text-gray-500 text-center">
+                            We recommend using your account number when reporting a brownout to help us locate you more accurately. However, you may also use your current location.
+                        </p>
+                        <div class="grid grid-cols-2 items-center p-2">
+                            <div class="space-x-2 flex items-center justify-center">
+                                <input type="radio" id="inlineRadio1" name="inlineRadio" value="account" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
+                                <h1 for="inlineRadio1" @click="locationType='account'" class="cursor-pointer">Account Number</h1>
+                                
+                            </div>
+                            <div class="space-x-2 flex items-center justify-center">
+                                <input type="radio" id="inlineRadio2" name="inlineRadio" value="current" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
+                                <h1 for="inlineRadio2" @click="locationType='current'" class="cursor-pointer">Current location</h1>
                             </div>
 
-                            <div class="space-x-2">
-                                <input type="radio" id="inlineRadio2" name="inlineRadio" value="manual" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
-                                <label for="inlineRadio2">Enter Address Manually</label>
-                            </div>
+                            <!-- <div class="space-x-2">
+                                <input type="radio" id="inlineRadio3" name="inlineRadio" value="manual" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
+                                <label for="inlineRadio3">Enter Address Manually</label>
+                            </div> -->
                         </div>
                         <div v-if="locationType == 'manual'" class="space-y-3">
                             <div class="relative space-y-1">
@@ -148,34 +162,34 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 </label>
                                 </div>
                         </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-
-                            <!-- Name field -->
-                            <div class="relative space-y-1">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-3 gap-y-3">
+                            <!-- Account Number -->
+                             <div class="relative space-y-1" v-if="locationType == 'account'">
                                 <input
-                                    id="name"
-                                    type="text"
-                                    v-model="data.name"
-                                    @blur="validateField('name')"
+                                    id="account"
+                                    type="tel"
+                                    v-model="data.account"
+                                    @keyup="debouncedValidateField"
                                     :class="[
                                     'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1',
-                                    errors.name ? 'border-red-500 ring-red-500 ' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    errors.account ? 'border-red-500 ring-red-500 ' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
                                     ]"
                                     :disabled="tickets && tickets.pending_ticket.length > 0"
                                     placeholder=" "
                                     autocomplete="off"
+                                    
                                 />
                                 <label
-                                    for="name"
+                                    for="account"
                                     :class="[
                                     'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
-                                    (data.name) ? '-top-3 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
-                                    errors.name ? '' : '',
+                                    (data.account) ? '-top-3 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
+                                    errors.account ? '' : '',
                                     ]"
                                     class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
-                                    ref="nameLabel"
+                                    ref="accountLabel"
                                 >
-                                    Name: <span class="text-red-500">*</span>
+                                    Account Number: <span class="text-red-500">*</span>
                                 </label>
                             </div>
 
@@ -206,6 +220,66 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 </label>
                             </div>
 
+                            <!-- Name field -->
+                            <div class="relative space-y-1" :class="locationType == 'account' ? 'col-span-full' : 'col-span-1 order-first'">
+                                <input
+                                    id="name"
+                                    type="text"
+                                    v-model="data.name"
+                                    @blur="validateField('name')"
+                                    :class="[
+                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 uppercase',
+                                    errors.name ? 'border-red-500 ring-red-500 ' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    ]"
+                                    :disabled="tickets && tickets.pending_ticket.length > 0"
+                                    placeholder=" "
+                                    autocomplete="off"
+                                />
+                                <label
+                                    for="name"
+                                    :class="[
+                                    'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+                                    (data.name) ? '-top-3 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
+                                    errors.name ? '' : '',
+                                    ]"
+                                    class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                                    ref="nameLabel"
+                                >
+                                    Name: <span class="text-red-500">*</span>
+                                </label>
+                            </div>
+
+                            <!-- Account Address -->
+                             <div class="relative space-y-1 col-span-full" v-if="locationType == 'account'">
+                                <input
+                                    id="address"
+                                    type="text"
+                                    v-model="data.address"
+                                    @blur="validateField('address')"
+                                    :class="[
+                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 uppercase',
+                                    errors.address ? 'border-red-500 ring-red-500 ' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    ]"
+                                    :disabled="tickets && tickets.pending_ticket.length > 0"
+                                    placeholder=" "
+                                    autocomplete="off"
+                                />
+                                <label
+                                    for="address"
+                                    :class="[
+                                    'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+                                    (data.address) ? '-top-3 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
+                                    errors.address ? '' : '',
+                                    ]"
+                                    class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                                    ref="addressLabel"
+                                >
+                                    Address: <span class="text-red-500">*</span>
+                                </label>
+                            </div>
+
+                            
+
                             <!-- Message textarea -->
                             <div class="relative col-span-full space-y-1">
                                 <textarea
@@ -213,7 +287,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 rows="2"
                                 v-model="data.message"
                                 :disabled="tickets && tickets.pending_ticket.length > 0"
-                                placeholder=" "
+                                placeholder="(Optional, but it’s helpful for us to understand your issue better)"
                                 class="peer block w-full border border-gray-300 rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                                 ></textarea>
                                 <label
@@ -224,7 +298,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 ]"
                                 class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500"
                                 >
-                                Message: <span class="text-xs">(Optional, but it’s helpful for us to understand your issue better)</span>
+                                Message:
                                 </label>
                             </div>
 
@@ -248,7 +322,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                         <div class="flex">
                             <h4 class="flex-none w-16 lg:w-32">Ticket No.</h4> 
                             <div class="flex-none px-5 lg:px-8">:</div>
-                            <h4 class="flex-1 font-medium">20250304123</h4>
+                            <h4 class="flex-1 font-semibold">{{ summaryData.ticket_no.toString().padStart(7, '0') }}</h4>
                         </div>
                         <div class="flex">
                             <h4 class="flex-none w-16 lg:w-32">Name</h4> 
@@ -271,10 +345,17 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                             <h4 class="flex-1">{{ curr_datetime.toLocaleString() }}</h4>
                         </div>
                         <div class="flex">
+                            <h4 class="flex-none w-16 lg:w-32">Status</h4>
+                            <div class="flex-none px-5 lg:px-8">:</div>
+                            <div class="flex-1 break-words text-red-500 font-bold" >Open</div>
+                        </div>
+                        <div class="flex">
                             <h4 class="flex-none w-16 lg:w-32">Message</h4>
                             <div class="flex-none px-5 lg:px-8">:</div>
                             <div class="flex-1 break-words overflow-auto">{{ summaryData.message }}</div>
                         </div>
+                       
+                        
                     </div>
                 </div>
             </div>
@@ -293,7 +374,8 @@ import "leaflet.fullscreen/Control.FullScreen.css";
 import axios from 'axios'
 import SpinnerOverlay from "./SpinnerOverlay.vue";
 import Tickets from "./Tickets.vue";
-import CryptoJS from 'crypto-js';
+import debounce from 'lodash/debounce';
+import CryptoJS from "crypto-js";
 
     export default {
         components: { LMap, LTileLayer, LMarker, LPopup,SpinnerOverlay,Tickets },
@@ -304,7 +386,7 @@ import CryptoJS from 'crypto-js';
                 tileLayerUrl: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 userLocation: null, // Stores user's location
                 userLocation2: null,
-                locationType: 'current',
+                locationType: this.$route.query.type ?? "account",
                 fetching_location: false,
                 data: { 
                     userLocation: "", 
@@ -316,6 +398,9 @@ import CryptoJS from 'crypto-js';
                     barangay: "",
                     municipality: "",
                     message: this.$route.query.message ?? "",
+                    account: this.$route.query.account ?? "",
+                    address: "",
+                    accountValid : false
                 },
                 errors: {
                     server: null,
@@ -325,6 +410,8 @@ import CryptoJS from 'crypto-js';
                     municipality: null,
                     zone: null,
                     barangay: null,
+                    account: null,
+                    address: null
                 },
                 brgys: [],
                 municipalities: [],
@@ -349,16 +436,23 @@ import CryptoJS from 'crypto-js';
                 }),
                 isMessengerBrowser: false,
                 messengerID: null,
+                debouncedValidateField: null,
+                isGrantedLocation: false
             };
         },
         created() {
-            this.getMyTicketHistory()
-            this.getPSGC()
             if(this.$route.query.token){
                 const params = new URLSearchParams(window.location.search);
                 const token = params.get('token'); // token is decoded properly now
                 this.messengerID = this.decryptAES(token, import.meta.env.VITE_AES_KEY);
+                localStorage.setItem("device_id", this.messengerID);
             }
+
+            this.debouncedValidateField = debounce(this.validateAccountNumber, 500); // 300ms delay
+
+            this.getMyTicketHistory()
+            this.getPSGC()
+            
            
         },
         mounted(){
@@ -369,8 +463,14 @@ import CryptoJS from 'crypto-js';
             if (navigator.permissions) {
                 navigator.permissions.query({ name: "geolocation" }).then((result) => {
                     if (result.state === "granted") {
+                        this.isGrantedLocation = true;
                         this.errors.server = ""
-                        this.getLocation();
+                        if(this.locationType == 'current'){
+                            this.getLocation();
+                        }else{
+                            this.validateAccountNumber()
+                        }
+                        
                     }else{
                         this.errors.server = "Please allow location access"
                     }
@@ -383,13 +483,53 @@ import CryptoJS from 'crypto-js';
                 this.data.municipality = ""
                 this.data.barangay = ""
                 this.data.zone = ""
+                this.data.account = ""
+                this.data.name = ""
+                this.data.address = ""
+                this.data.userLocation = ""
+                this.data.accountValid = false
 
                 this.errors.municipality = null
                 this.errors.barangay = null
                 this.errors.zone = null
+                this.errors.account = null
+                this.errors.name = null
+                this.errors.mobile = null
+
+                if(this.locationType == 'current'){
+                    this.getLocation();
+                }
             }
         },  
         methods: {
+            decryptAES(base64Cipher, hexKey) {
+                try {
+                    const key = CryptoJS.enc.Hex.parse(hexKey);
+
+                    // Decode Base64 → WordArray
+                    const rawData = CryptoJS.enc.Base64.parse(base64Cipher);
+
+                    // Extract IV (first 16 bytes) and ciphertext (rest)
+                    const iv = CryptoJS.lib.WordArray.create(rawData.words.slice(0, 4), 16); // 16 bytes = 4 words
+                    const ciphertext = CryptoJS.lib.WordArray.create(rawData.words.slice(4), rawData.sigBytes - 16);
+
+                    // Decrypt
+                    const decrypted = CryptoJS.AES.decrypt(
+                    { ciphertext: ciphertext },
+                    key,
+                    {
+                        iv: iv,
+                        mode: CryptoJS.mode.CBC,
+                        padding: CryptoJS.pad.Pkcs7
+                    }
+                    );
+
+                    return decrypted.toString(CryptoJS.enc.Utf8);
+                } catch (e) {
+                    console.error("Decryption failed:", e.message);
+                    return null;
+                }
+            },
             async getLocation() {
                 if ("geolocation" in navigator) {
                     try {
@@ -401,19 +541,45 @@ import CryptoJS from 'crypto-js';
                         this.fetching_location = true;
 
                         const position = await new Promise((resolve, reject) => {
-                            navigator.geolocation.getCurrentPosition(resolve, reject);
-                        });
+                                navigator.geolocation.getCurrentPosition(
+                                    (pos) => {
+                                        this.fetching_location = false;
+                                        resolve(pos); // ✅ Resolve on success
+                                    },
+                                    (error) => {
+                                        switch (error.code) {
+                                            case error.PERMISSION_DENIED:
+                                                this.errors.server = "Permission denied. Please allow location access.";
+                                                break;
+                                            case error.POSITION_UNAVAILABLE:
+                                                this.errors.server = "Location information is unavailable.";
+                                                break;
+                                            case error.TIMEOUT:
+                                                this.errors.server = "Location request timed out.";
+                                                break;
+                                            default:
+                                                this.errors.server = "An unknown error occurred.";
+                                        }
+                                        this.fetching_location = false;
+                                        reject(error); // ✅ Reject on error
+                                    },
+                                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                                );
+                            });
+
                         
                         
 
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
+                  
                         this.data.userLocation = [lat, lng];
                         this.userLocation2 = [lat, lng];
                         this.center = [lat, lng];
 
                         // console.log("Latitude:", lat, "Longitude:", lng);
-                        this.getMyTicketRange()
+                        // this.getMyTicketRange()
+
                         // Call reverse geocoding function
                         // await this.getAddress(lat, lng);
                         // console.log("Location fully loaded.");
@@ -460,10 +626,11 @@ import CryptoJS from 'crypto-js';
                 }
             },
             updateLocation(event) {
+                console.log([event.target.getLatLng().lat, event.target.getLatLng().lng])
                 this.data.userLocation = [event.target.getLatLng().lat, event.target.getLatLng().lng];
                 this.userLocation2 = [event.target.getLatLng().lat, event.target.getLatLng().lng];
                 this.center = this.data.userLocation;
-                this.getMyTicketRange()
+                // this.getMyTicketRange()
                 // this.getAddress(event.target.getLatLng().lat, event.target.getLatLng().lng);
                 // this.$swal({
                 //     title: "Are you sure?",
@@ -509,47 +676,51 @@ import CryptoJS from 'crypto-js';
                     barangay: "",
                     municipality: "",
                     message: "",
+                    account: "",
+                    accountValid: false,
                 }
             },
-            submitReport(){
+            async submitReport(){
                 var self = this
+                
+                self.errors.server = null
+               
                 if(self.tickets && self.tickets.pending_ticket.length > 0){
                     self.errors.server = "You have an active ticket."
                     return;
                 }
-                Object.keys(this.data).forEach((field) => this.validateField(field));
+                await Promise.all(Object.keys(this.data).map(field => this.validateField(field)));
 
-                if (Object.values(this.errors).some((error) => error)) {
-                    self.$refs.error_message.focus()
-                    return;
+                if (Object.values(this.errors).some((error) => error)) { 
+                    self.$refs.error_message.focus();
+                    return; 
                 }
-                
 
                 const rawData = self.data
                 self.curr_datetime = new Date();
                 
+                
                 const userDeviceID = this.$route.query.token && this.messengerID ? this.messengerID : self.getDeviceId()
-
+                
                 rawData.latitude = rawData.userLocation[0]
                 rawData.longitude = rawData.userLocation[1]
 
-                const address = rawData.zone + ", " + rawData.barangay.name + ", " + rawData.municipality.name
-                const address2 = self.locationType == 'current' ? 'Current Location' : address
+                // const address = rawData.zone + ", " + rawData.barangay.name + ", " + rawData.municipality.name
+                const address2 = self.locationType == 'current' ? 'Current Location' : rawData.address
+
                 const formData = {
-                    created_at: self.curr_datetime.toISOString(),
-                    name: rawData.name,
-                    address: address2,
+                    name: rawData.name.toUpperCase(),
+                    address: address2.toUpperCase(),
                     mobile: rawData.mobile,
                     location:{
                         type: "Point",
                         coordinates:[rawData.longitude,rawData.latitude]
                     },
-                    // latitude: rawData.latitude.toString(),
-                    // longitude: rawData.longitude.toString(),
                     message: rawData.message,
-                    uuid: userDeviceID.toString()
+                    uuid: userDeviceID.toString(),
+                    account: rawData.account ?? "",
+                    sid: this.$route.query.sid ?? ""
                 }
-                
                 self.summaryData = formData
                 // self.$swal({
                 //     title: "Report Summary",
@@ -572,7 +743,11 @@ import CryptoJS from 'crypto-js';
                         self.isLoading = true
                         axios.post(`${import.meta.env.VITE_API_URL}/ticket/create`, formData)
                         .then((response) => {
-                            self.isSummary = true
+                            self.summaryData.ticket_no = response.data.ticket_no
+                            self.summaryData.created_at = response.data.created_at
+                            self.$nextTick(() => {
+                                self.isSummary = true
+                            })
                             // self.$swal({
                             //     title: 'Report Submitted',
                             //     html:
@@ -595,6 +770,9 @@ import CryptoJS from 'crypto-js';
                             self.errors.server = "There was an error occurred. Please try again"
                             switch (error.response.status) {
                                 case 409:
+                                    self.errors.server = error.response.data.detail
+                                    break;
+                                case 422:
                                     self.errors.server = error.response.data.detail
                                     break;
                                 default:
@@ -620,11 +798,9 @@ import CryptoJS from 'crypto-js';
                 var self = this
                 self.brgys = self.psgcData.filter((psgc) => psgc.geo_code.startsWith(self.data.municipality.geo_code.substring(0, 6)) && psgc.geo_level == 'Bgy').sort((a, b) => a.name.localeCompare(b.name))
             },
-            validateName() {
-                const regex = /^[A-Za-zÑñ.]+(?:[-' ][A-Za-zÑñ.]+)*$/;
+            validateName(name) {
+                const regex = /^[A-Za-zÑñ0-9.,'’\-()\/ ]+$/;
 
-                // Trim whitespace
-                const name = this.data.name.trim();
                 // Check if empty
                 if (!name) return "Name is required.";
                 // console.log(name.length)
@@ -637,6 +813,57 @@ import CryptoJS from 'crypto-js';
 
                 return ""; // No errors, valid name
             },
+            async validateAccountNumber() {
+                try {
+                    const account = this.data.account
+                    if (!account) return "Account is required.";
+
+                    if(account.length < 8) return 
+                    this.errors.account = null
+                    this.isLoading = true
+                    // this.data.name = null;
+                    // this.data.address = null;
+                    const response = await fetch(`https://eservicesapi.casureco1.com/api/master/account/verify?accno=${account}`);
+                    const data = await response.json();
+
+                    
+
+                    if(data.isValid){
+                        if(data.data.nflatitude == null || data.data.nflongitude == null){
+                            this.isLoading = false
+                            this.data.userLocation = [0,0];
+                            this.data.accountValid = false;
+                            this.errors.account = "Account has no location data. Please use current location";
+                            return "Account has no location data. Please use current location";
+                        }
+                        this.data.userLocation = [
+                            data.data.nflatitude ?? 0,
+                            data.data.nflongitude ?? 0
+                        ];
+
+                        this.data.accountValid = true;
+                        this.data.name = data.data.account_name;
+                        this.data.address = data.data.account_address;
+                        
+                        console.log(this.data.userLocation)
+                        this.userLocation2 = [data.data.nflatitude, data.data.nflongitude];
+                        this.center = [data.data.nflatitude, data.data.nflongitude];
+                        
+                    }else{
+                        this.data.userLocation = [0,0];
+                        this.data.name = null;
+                        this.data.address = null;
+                        this.errors.account = "Invalid Account Number"
+                    }
+
+                    this.isLoading = false
+                    return data.isValid ? "" : "Invalid Account Number";
+                } catch (error) {
+                    this.isLoading = false
+                    console.error("Error fetching account:", error);
+                    return "Error validating account";
+                }
+            },
             validateMobileNumber(mobile) {
                 // Remove spaces and dashes (optional formatting characters)
                 mobile = mobile.replace(/[\s-]/g, "");
@@ -648,24 +875,31 @@ import CryptoJS from 'crypto-js';
                 const regex = /^09\d{9}$/;
                 return regex.test(mobile) ? "" : "Invalid Mobile Number";
             },
-            validateField(field) {
-                const value = this.data[field] == "" ? this.data[field].trim() : this.data[field];
+            async validateField(field) {
+                const value = typeof this.data[field] === 'string' ? this.data[field].trim() : this.data[field];
 
                 const rules = {
+                    // account: async () => {
+                    //     // Only validate account if locationType is 'account'
+                    //     if (this.locationType === 'account') {
+                    //         return await this.validateAccountNumber(value);
+                    //     }
+                    //     return ""; // skip validation otherwise
+                    // },
+                    account: () => this.locationType == 'account' ?  this.data.accountValid ? "" : "Invalid Account Number" : "",
                     mobile: () => this.validateMobileNumber(value),
-                    name: () => this.validateName(value, 2, 50),
-                    userLocation: () => (value ? "" : this.locationType == 'current' ? "Location is required." : ''),
-                    municipality: () => (value ? "" : this.locationType == 'manual' ? "Municipality is required." : ""),
-                    barangay: () => (value ? "" : this.locationType == 'manual' ? "Barangay is required." : ""),
-                    zone: () => (value ? "" : this.locationType == 'manual' ? "Sitio/Zone/Street is required." : ""),
+                    name: () => this.validateName(value),
+                    userLocation: () => (value ? "" : this.locationType === 'current' ? "Location is required." : ''),
+                    address: () => (value ? "" : this.locationType === 'account' ? "Address is required." : ""),
+                    // municipality: () => (value ? "" : this.locationType === 'manual' ? "Municipality is required." : ""),
+                    // barangay: () => (value ? "" : this.locationType === 'manual' ? "Barangay is required." : ""),
+                    // zone: () => (value ? "" : this.locationType === 'manual' ? "Sitio/Zone/Street is required." : ""),
                 };
-
-                this.errors[field] = rules[field] ? rules[field]() : "";
-                
-                // console.log(this.errors)
+                console.log(this.errors)
+                this.errors[field] = rules[field] ? await rules[field]() : "";
             },
             async getMyTicketHistory(){
-                const userDeviceID = this.getDeviceId()
+                const userDeviceID = this.messengerID || this.getDeviceId()
                 await fetch(`${import.meta.env.VITE_API_URL}/ticket/get_my_ticket/${userDeviceID}`)
                 .then(response => response.json())
                 .then(data => {
@@ -697,27 +931,21 @@ import CryptoJS from 'crypto-js';
                         .bindPopup(loc.text);
                 });
             },
-            decryptAES(encryptedBase64, hexKey) {
-                const key = CryptoJS.enc.Hex.parse(hexKey);
-                const encryptedWordArray = CryptoJS.enc.Base64.parse(encryptedBase64);
-
-                // Extract IV (first 16 bytes = 4 words)
-                const iv = CryptoJS.lib.WordArray.create(encryptedWordArray.words.slice(0, 4), 16);
-
-                // Extract ciphertext (rest)
-                const ciphertext = CryptoJS.lib.WordArray.create(
-                    encryptedWordArray.words.slice(4),
-                    encryptedWordArray.sigBytes - 16
-                );
-
-                const decrypted = CryptoJS.AES.decrypt({ ciphertext }, key, {
-                    iv: iv,
-                    mode: CryptoJS.mode.CBC,
-                    padding: CryptoJS.pad.Pkcs7
-                });
-
-                return decrypted.toString(CryptoJS.enc.Utf8);
+            formatStatus(status){
+                switch(status) {
+                    case 0:
+                        return 'Open';
+                    case 1:
+                        return 'Troubleshooting';
+                    case 2:
+                        return 'Resolved';
+                    case 3:
+                        return 'Closed';
+                    default:
+                        return 'Unknown Status';
+                }
             }
+            
         }
     }
 </script>

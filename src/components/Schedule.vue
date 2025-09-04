@@ -44,7 +44,7 @@
           </div>
           <!-- Unavailable date -->
           <div
-            v-else
+            v-if="!isAvailable(day)"
             :key="'unavailable-' + day"
             class="h-10 flex items-center justify-center rounded-lg text-gray-400 opacity-50 cursor-not-allowed"
           >

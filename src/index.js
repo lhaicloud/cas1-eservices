@@ -19,9 +19,51 @@ L.Icon.Default.mergeOptions({
 });
 
 import './style.css'
-import './serviceWorker';
+
+import { subscribeUserToPush  } from "./push";
 
 Vue.config.productionTip = false;
+
+// Register Service Worker
+
+if ("serviceWorker" in navigator && "PushManager" in window) {
+  navigator.serviceWorker
+    .register("/serviceWorker.js")
+    .then(async (reg) => {
+      console.log("✅ Service Worker registered:", reg);
+
+      try {
+        const swReg = await navigator.serviceWorker.ready;
+
+        // ✅ Check if user is already subscribed
+        const existingSubscription = await swReg.pushManager.getSubscription();
+
+        if (!existingSubscription) {
+          // Not yet subscribed → subscribe now
+          const success = await subscribeUserToPush();
+
+          if (success) {
+            swReg.showNotification("🎉 Subscribed Successfully!", {
+              body: "You will now receive push notifications.",
+              icon: "/images/icons/icon-192x192.png",
+              badge: "/images/icons/icon-72x72.png",
+            });
+          }
+        } else {
+          console.log("ℹ️ Already subscribed, skipping notification.");
+        }
+      } catch (err) {
+        console.error("❌ Push subscription failed:", err);
+      }
+    })
+    .catch((err) => console.error("❌ SW registration failed:", err));
+}
+
+
+
+
+
+
 
 new Vue({
   router,
