@@ -12,19 +12,27 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
             
             <!-- <div v-if="!tickets" class="border border-gray-300 rounded-lg bg-white p-5"> -->
             <div>
-                <div v-if="!isSummary" class="rounded-lg space-y-5 bg-white p-3">
+                <div v-if="!isSummary" class="rounded-lg space-y-5 bg-white p-5">
                     <h3 class="font-bold text-center text-base border-b pb-3">Brownout Report</h3>
                     <div v-if="tickets && tickets.pending_ticket.length > 0" class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700">
                     <!-- <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700"> -->
-                        <router-link :to="{ name: 'TicketDetails', params: { data: tickets, tab: 1 }}">You already have an active ticket. You can’t create a new one until it’s resolved or closed. Click here to view details.</router-link>
+                        <router-link :to="{ name: 'TicketDetails', params: { data: tickets, tab: 1 }}">You already have an active ticket. You can’t create a new one until it’s resolved or closed. <span class="font-medium text-blue-700 hover:border-b border-blue-700">Click here to view details</span>.</router-link>
                     </div>
                     <div v-if="tickets && tickets.ticket_history.length > 0 && tickets.pending_ticket.length == 0" class="bg-blue-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700">
-                        You have {{ tickets.ticket_history.length }} resolved ticket{{ tickets.ticket_history.length !== 1 ? 's' : '' }} in the past 30 days. Click here to view the details: 
-                        <router-link :to="{ name: 'TicketDetails', params: { data: tickets, tab: 2 }}" class="text-blue-700 hover:underline cursor-pointer">View Tickets</router-link>
+                        
+                        <router-link :to="{ name: 'TicketDetails', params: { data: tickets, tab: 2 }}">You have {{ tickets.ticket_history.length }} resolved ticket{{ tickets.ticket_history.length !== 1 ? 's' : '' }} in the past 30 days. <span class="font-medium text-blue-700 hover:border-b border-blue-700">Click here to view details</span></router-link>
                     </div>
-                    <div class="space-y-3 p-4 rounded-2xl shadow bg-white border">
+                    <ul class="flex justify-center gap-5">
+                        <li class="p-2 cursor-pointer hover:border-b-2 hover:border-blue-500" :class="!isFollowUp ? 'border-b-2 text-blue-700 border-blue-700 font-semibold hover:border-blue-700 hover:border-b-2' : ''" @click="isFollowUp = false;">
+                            Submit A Report
+                        </li>
+                        <li class="p-2 cursor-pointer hover:border-b-2 hover:border-blue-500" :class="isFollowUp ? 'border-b-2 text-blue-700 border-blue-700 font-semibold hover:border-blue-700 hover:border-b-2' : ''" @click="isFollowUp = true;"> 
+                            Follow-up Report
+                        </li>
+                    </ul>
+                    <!-- <div class="space-y-3 p-4 rounded-2xl shadow bg-white border">
                         <p class="text-sm font-medium text-gray-800">
-                            Do you want to follow up your report?
+                           Would you like to submit a new report or follow up on an existing one?
                         </p>
                         <div class="flex gap-3">
                             <button
@@ -42,15 +50,15 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                             No
                             </button>
                         </div>
-                    </div>
+                    </div> -->
 
-                    <div v-if="isFollowUp !== null && isFollowUp">
+                    <div v-if="isFollowUp !== null && isFollowUp" class="space-y-3">
                         <div class="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm" v-if="Object.values(errors).some(error => error)">
                             <ul class="text-left px-5 m-0 list-disc">
                                 <li v-for="error in errors" v-if="error"><small>{{ error }}</small></li>
                             </ul>
                         </div>
-                        <p>
+                        <p class="text-sm">
                             Please enter your Ticket Number:
                         </p>
                         <div class="flex gap-1 mt-2">
@@ -160,12 +168,15 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                         <p :class="followedTicket.status == 3 ? 'font-bold' : 'font-medium'">Resolved</p>
                                         <p class="text-gray-600" :class="followedTicket.status == 3 ? 'font-semibold' : ''">{{ formatDate(followedTicket.resolved_at) }}</p>
                                         <p class="text-gray-500 mt-1">{{ followedTicket.remarks }}</p>
+                                        <p class="mt-2" v-if="followedTicket.status == 3">
+                                            <button class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs" @click="updateTicket(followedTicket)">Close Ticket</button>
+                                        </p>
                                     </div>
 
                                     <div v-if="followedTicket.closed_at" class="relative">
                                         <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 4 ? 'bg-blue-500' : 'bg-gray-300'"></div>
                                         <p :class="followedTicket.status == 4 ? 'font-bold' : 'font-medium'">Closed</p>
-                                        <p class="text-gray-600" :class="histofollowedTicketry.status == 4 ? 'font-semibold' : ''">{{ formatDate(followedTicket.closed_at) }}</p>
+                                        <p class="text-gray-600" :class="followedTicket.status == 4 ? 'font-semibold' : ''">{{ formatDate(followedTicket.closed_at) }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -181,8 +192,9 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                         <!-- <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700" v-if="tickets_in_range.length > 0">
                             There {{ tickets_in_range.length === 1 ? 'is' : 'are' }} {{ tickets_in_range.length }} active ticket{{ tickets_in_range.length !== 1 ? 's' : '' }} in your area.
                         </div> -->
+                      
                         
-                        <div class="space-y-3 p-4 rounded-2xl shadow bg-white border" v-if="isFollowUp !== null && isFollowUp === false">
+                        <div class="space-y-3 p-4 rounded-2xl shadow bg-white border" v-if="isFollowUp !== null && isFollowUp === false && locationType === null">
                             <p class="text-sm font-medium text-gray-800">
                                 Do you have your account number?
                             </p>
@@ -208,6 +220,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 </button>
                             </div>
                         </div>
+                        
                         <div v-if="locationType !== null" class="space-y-3">
                             <div class="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm" ref="error_message" v-if="Object.values(errors).some(error => error)">
                                 <ul class="text-left px-5 m-0 list-disc">
@@ -535,12 +548,14 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                        
                         
                     </div>
-                    <p class="mt-5 text-black">
+                    <p class="mt-5 mb-5 text-black">
                         Note: <br/>
                         Kindly keep your ticket number for follow-up or status inquiries.
                     </p>
+                    <button class="text-gray-800 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 py-1 px-2 text-sm rounded-md" @click="gobackhome()">Back to home</button>
                 </div>
             </div>
+                
             
         </div>
     </div>
@@ -621,7 +636,7 @@ import CryptoJS from "crypto-js";
                 debouncedValidateField: null,
                 isGrantedLocation: false,
                 TicketNo: '',
-                isFollowUp: (this.$route.query.account ? false : true) ?? null,
+                isFollowUp: (this.$route.query.account !== null ? false : true) ?? false,
                 followedTicket: null
             };
         },
@@ -698,8 +713,15 @@ import CryptoJS from "crypto-js";
                     this.getLocation();
                 }
             },
-            isFollowUp(){
+            isFollowUp(newval){
                 this.locationType = null
+                if(newval){
+                    setTimeout(() => {
+                        this.$refs.ticketno.focus();
+                    }, 300);
+                }else{
+                    this.getMyTicketHistory();
+                }
             }
         },  
         methods: {
@@ -886,6 +908,8 @@ import CryptoJS from "crypto-js";
                     account: "",
                     accountValid: false,
                 }
+                
+
             },
             async submitReport(){
                 var self = this
@@ -1199,6 +1223,29 @@ import CryptoJS from "crypto-js";
 
                 return formattedDate;
             },
+            updateTicket(ticket) {
+                this.isLoading = true;
+                axios
+                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${4}`, {
+                        params: {
+                            remarks: ''
+                        }
+                    })
+                    .then((response) => {
+                        this.isLoading = false;
+                        this.followUpTicket();
+                    })
+                    .catch((error) => {
+                        this.isLoading = false;
+                        this.errors.ticket = "Error updating ticket. Please try again.";
+                        console.error("Error updating ticket:", error);
+                    });
+            },
+            gobackhome(){
+                this.locationType = null
+                this.isSummary = false
+                this.isFollowUp = false
+            }
 
             
         }
