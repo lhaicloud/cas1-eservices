@@ -20,7 +20,7 @@ L.Icon.Default.mergeOptions({
 
 import './style.css'
 
-import { subscribeUserToPush  } from "./push";
+import { subscribeUserToPush  } from "./push.js";
 
 Vue.config.productionTip = false;
 

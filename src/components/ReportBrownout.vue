@@ -3,81 +3,254 @@
         <!-- <header class="absolute top-0 w-full bg-gray-800 text-white justify-center p-2 text-xs flex items-center gap-1 px-2">
             <img src="/images/cas1-logo.webp" alt="CASURECO 1 LOGO" width="15" height="20"> CASURECO I
         </header> -->
-        <div v-if="isMessengerBrowser" class="text-justify bg-red-500 text-white p-5 rounded-lg">
+        <!-- <div v-if="isMessengerBrowser" class="text-justify bg-red-500 text-white p-5 rounded-lg">
             <h1>To provide accurate results, we need access to your location.
 Please open this link in your device’s main browser (like Chrome or Safari), as Facebook Messenger’s built-in browser may not allow location access.</h1>
-        </div>
+        </div> -->
         <SpinnerOverlay v-if="isLoading"/>
-        <div class="w-full md:w-1/2 xl:w-2/5 grid grid-cols-1 m-3 space-y-2 pb-10" v-if="!isMessengerBrowser">
+        <div class="w-full md:w-1/2 xl:w-2/5 grid grid-cols-1 m-3 space-y-2 pb-10">
             
             <!-- <div v-if="!tickets" class="border border-gray-300 rounded-lg bg-white p-5"> -->
             <div>
-                <div v-if="!isSummary" class="rounded-lg space-y-8 bg-white p-3">
-                    <div class="space-y-2">
-                        <h3 class="font-bold text-center text-lg py-3">Brownout Report</h3>
-                        <h3 class="text-center">Kindly fill in the details below. You may <span class="font-bold">drag the location icon</span> to mark your location. </h3>
+                <div v-if="!isSummary" class="rounded-lg space-y-5 bg-white p-3">
+                    <h3 class="font-bold text-center text-base border-b pb-3">Brownout Report</h3>
+                    <div v-if="tickets && tickets.pending_ticket.length > 0" class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700">
+                    <!-- <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700"> -->
+                        <router-link :to="{ name: 'TicketDetails', params: { data: tickets, tab: 1 }}">You already have an active ticket. You can’t create a new one until it’s resolved or closed. Click here to view details.</router-link>
                     </div>
-                    <!-- <hr/> -->
-                    <div class="space-y-3">
-                        <div v-if="tickets && tickets.pending_ticket.length > 0" class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700">
-                        <!-- <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700"> -->
-                            You have an active ticket. Click here to view the details: 
-                            <router-link :to="{ name: 'TicketDetails', params: { data: tickets, tab: 1 }}" class="text-blue-700 hover:underline cursor-pointer">View Ticket</router-link>
+                    <div v-if="tickets && tickets.ticket_history.length > 0 && tickets.pending_ticket.length == 0" class="bg-blue-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700">
+                        You have {{ tickets.ticket_history.length }} resolved ticket{{ tickets.ticket_history.length !== 1 ? 's' : '' }} in the past 30 days. Click here to view the details: 
+                        <router-link :to="{ name: 'TicketDetails', params: { data: tickets, tab: 2 }}" class="text-blue-700 hover:underline cursor-pointer">View Tickets</router-link>
+                    </div>
+                    <div class="space-y-3 p-4 rounded-2xl shadow bg-white border">
+                        <p class="text-sm font-medium text-gray-800">
+                            Do you want to follow up your report?
+                        </p>
+                        <div class="flex gap-3">
+                            <button
+                            class="px-4 py-2 rounded-xl text-sm font-medium transition"
+                            :class="isFollowUp ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'"
+                            @click="isFollowUp = true"
+                            >
+                            Yes
+                            </button>
+                            <button
+                            class="px-4 py-2 rounded-xl text-sm font-medium transition"
+                            :class="isFollowUp === false ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'"
+                            @click="isFollowUp = false"
+                            >
+                            No
+                            </button>
                         </div>
-                        <div v-if="tickets && tickets.ticket_history.length > 0 && tickets.pending_ticket.length == 0" class="bg-blue-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700">
-                            You have {{ tickets.ticket_history.length }} resolved ticket{{ tickets.ticket_history.length !== 1 ? 's' : '' }} in the past 30 days. Click here to view the details: 
-                            <router-link :to="{ name: 'TicketDetails', params: { data: tickets, tab: 2 }}" class="text-blue-700 hover:underline cursor-pointer">View Tickets</router-link>
-                        </div>
-                        <!-- <div v-if="tickets && tickets.pending_ticket.length == 0" class="bg-red-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700"> -->
-                        <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700" v-if="tickets_in_range.length > 0">
-                            There {{ tickets_in_range.length === 1 ? 'is' : 'are' }} {{ tickets_in_range.length }} active ticket{{ tickets_in_range.length !== 1 ? 's' : '' }} in your area.
-                        </div>
-                        <div class="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm" ref="error_message" v-if="Object.values(errors).some(error => error)">
+                    </div>
+
+                    <div v-if="isFollowUp !== null && isFollowUp">
+                        <div class="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm" v-if="Object.values(errors).some(error => error)">
                             <ul class="text-left px-5 m-0 list-disc">
                                 <li v-for="error in errors" v-if="error"><small>{{ error }}</small></li>
                             </ul>
                         </div>
-                        <div class="text-center" v-if="!isGrantedLocation && !fetching_location">
-                            <button class="btn btn-success " @click="getLocation()">Allow Location Access</button>
-                        </div>
-                        <div v-if="!data.userLocation && !fetching_location && isGrantedLocation" class="text-center my-3 bg-red-100 p-1 text-red-700">No Location Data</div>
-                        <div v-if="fetching_location && !data.userLocation" class="text-center my-3">Please wait, Fetching Location...</div>
-                        <div v-if="!fetching_location && data.userLocation">
-
-                            <l-map :zoom="zoom" :center="center" @ready="onMapReady" class=" h-36 w-full rounded z-0"  ref="map">
-                                <l-tile-layer :url="tileLayerUrl" />
-                                <l-marker v-if="data.userLocation" :zIndexOffset="1000"  :lat-lng="data.userLocation" :draggable="true" @moveend="updateLocation">
-                                    <l-popup>Drag me to change location</l-popup>
-                                </l-marker>
-                                <l-marker 
-                                    v-for="(marker, index) in tickets_in_range" 
-                                    :key="index" 
-                                    :lat-lng="[marker[1], marker[0]]"
-                                    :icon="customIcon"
-                                ></l-marker>
-                                
-                                
-                            </l-map>
-                        </div>
-                        <p class="text-xs text-gray-500 text-center">
-                            We recommend using your account number when reporting a brownout to help us locate you more accurately. However, you may also use your current location.
+                        <p>
+                            Please enter your Ticket Number:
                         </p>
-                        <div class="grid grid-cols-2 items-center p-2">
-                            <div class="space-x-2 flex items-center justify-center">
-                                <input type="radio" id="inlineRadio1" name="inlineRadio" value="account" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
-                                <h1 for="inlineRadio1" @click="locationType='account'" class="cursor-pointer">Account Number</h1>
-                                
+                        <div class="flex gap-1 mt-2">
+                            <div class="relative space-y-1 flex-grow">
+                                <input
+                                    id="ticketno"
+                                    type="tel"
+                                    v-model="TicketNo"
+                                    :class="[
+                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1',
+                                    errors.ticket ? 'border-red-500 ring-red-500 ' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    ]"
+                                    placeholder=" "
+                                    autocomplete="off"
+                                    @keyup.enter="followUpTicket"
+                                    ref="ticketno"
+                                    
+                                />
+                                <label
+                                    for="ticketno"
+                                    :class="[
+                                    'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+                                    (TicketNo) ? '-top-3 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
+                                    errors.ticket ? '' : '',
+                                    ]"
+                                    class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+                                    ref="accountLabel"
+                                >
+                                    Ticket Number:
+                                </label>
                             </div>
-                            <div class="space-x-2 flex items-center justify-center">
-                                <input type="radio" id="inlineRadio2" name="inlineRadio" value="current" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
-                                <h1 for="inlineRadio2" @click="locationType='current'" class="cursor-pointer">Current location</h1>
-                            </div>
-
-                            <!-- <div class="space-x-2">
-                                <input type="radio" id="inlineRadio3" name="inlineRadio" value="manual" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
-                                <label for="inlineRadio3">Enter Address Manually</label>
-                            </div> -->
+                            <button class="px-3 bg-gray-200 rounded-md border-gray-400 active:bg-gray-300 hover:bg-gray-300" @click="followUpTicket">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" role="img">
+                                    <circle cx="11" cy="11" r="7"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </button>
                         </div>
+                        <div v-if="followedTicket" class="mt-5">
+                            <div class="mt-5 space-y-3 p-4 rounded-2xl shadow border bg-white">
+                                <div class="grid grid-cols-2 text-center">
+                                <h4 class="col-span-2 font-medium border-b pb-2 mb-2">Ticket No. {{ followedTicket.ticket_no.toString().padStart(7, '0') }}</h4>
+                            </div>
+                            <div class="space-y-1">
+                                <!-- <div class="flex">
+                                    <h4 class="flex-1">Ticket No.</h4> 
+                                    <div class="flex-none px-1">:</div>
+                                    <h4 class="flex-1 font-medium">{{ history.ticket_no.toString().padStart(7, '0') }}</h4>
+                                </div> -->
+                                <div class="grid grid-cols-2">
+                                    <h4 class="col-span-1">Name</h4> 
+                                    <h4 class="col-span-1">: {{ followedTicket.name }}</h4>
+                                </div>
+                                <div class="flex">
+                                    <h4 class="flex-1">Mobile No.</h4>
+                                    <div class="flex-none px-1">:</div>
+                                    <h4 class="flex-1">{{ followedTicket.mobile }}</h4>
+                                </div>
+                                <div class="flex">
+                                    <h4 class="flex-1">Address</h4>
+                                    <div class="flex-none px-1">:</div>
+                                    <h4 class="flex-1">{{ followedTicket.address }}</h4>
+                                </div>
+                                <!-- <div class="flex">
+                                    <h4 class="flex-1">Status</h4>
+                                    <div class="flex-none px-1">:</div>
+                                    <div class="flex-1 font-bold" :class="statusClass[history.status]">{{ formatStatus(history.status) }}</div>
+                                </div> -->
+                                <div class="flex">
+                                    <h4 class="flex-1">Message</h4>
+                                    <div class="flex-none px-1">:</div>
+                                    <div class="flex-1 break-words overflow-auto">{{ followedTicket.message }}</div>
+                                </div>
+                                <!-- <div class="flex">
+                                    <h4 class="flex-1">Remarks</h4>
+                                    <div class="flex-none px-1">:</div>
+                                    <div class="flex-1 break-words overflow-auto">{{ history.remarks }}</div>
+                                </div> -->
+                            </div>
+                            <!-- ✅ Timeline Stepper -->
+                            <div class="mt-4 border-t pt-3">
+                                <h4 class="font-medium mb-3">Timeline</h4>
+                                <div class="relative pl-6">
+                                    <div class="absolute top-0 left-2 w-0.5 h-full bg-gray-300"></div>
+
+                                    <div v-if="followedTicket.created_at" class="relative mb-3">
+                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 0 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        <p :class="followedTicket.status == 0 ? 'font-bold' : 'font-medium'">Submitted</p>
+                                        <p class="text-gray-600" :class="followedTicket.status == 0 ? 'font-semibold' : ''">{{ formatDate(followedTicket.created_at) }}</p>
+                                    </div>
+
+                                    <div v-if="followedTicket.acknowledged_at" class="relative mb-3">
+                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        <p :class="followedTicket.status == 1 ? 'font-bold' : 'font-medium'">Acknowledged</p>
+                                        <p class="text-gray-600" :class="followedTicket.status == 1 ? 'font-semibold' : ''">{{ formatDate(followedTicket.acknowledged_at) }}</p>
+                                    </div>
+
+                                    <div v-if="followedTicket.troubleshoot_at" class="relative mb-3">
+                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 2 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        <p :class="followedTicket.status == 2 ? 'font-bold' : 'font-medium'">Troubleshoot Started</p>
+                                        <p class="text-gray-600" :class="followedTicket.status == 2 ? 'font-semibold' : ''">{{ formatDate(followedTicket.troubleshoot_at) }}</p>
+                                        <p class="text-gray-500 mt-1">Our maintenance team is on their way to troubleshoot the issue</p>
+                                    </div>
+
+                                    <div v-if="followedTicket.resolved_at" class="relative mb-3">
+                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 3 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        <p :class="followedTicket.status == 3 ? 'font-bold' : 'font-medium'">Resolved</p>
+                                        <p class="text-gray-600" :class="followedTicket.status == 3 ? 'font-semibold' : ''">{{ formatDate(followedTicket.resolved_at) }}</p>
+                                        <p class="text-gray-500 mt-1">{{ followedTicket.remarks }}</p>
+                                    </div>
+
+                                    <div v-if="followedTicket.closed_at" class="relative">
+                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 4 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        <p :class="followedTicket.status == 4 ? 'font-bold' : 'font-medium'">Closed</p>
+                                        <p class="text-gray-600" :class="histofollowedTicketry.status == 4 ? 'font-semibold' : ''">{{ formatDate(followedTicket.closed_at) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        
+                        </div>
+                    </div>
+                    <div class="space-y-3" v-if="isFollowUp !== null && isFollowUp === false">
+                        
+                        <!-- <div v-if="tickets && tickets.pending_ticket.length == 0" class="bg-red-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700"> -->
+                        <!-- <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700" v-if="tickets_in_range.length > 0">
+                            There {{ tickets_in_range.length === 1 ? 'is' : 'are' }} {{ tickets_in_range.length }} active ticket{{ tickets_in_range.length !== 1 ? 's' : '' }} in your area.
+                        </div> -->
+                        
+                        <div class="space-y-3 p-4 rounded-2xl shadow bg-white border" v-if="isFollowUp !== null && isFollowUp === false">
+                            <p class="text-sm font-medium text-gray-800">
+                                Do you have your account number?
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                If you don’t have it, you can use your current location instead.
+                            </p>
+                            <div class="flex gap-3">
+                                <button
+                                class="px-4 py-2 rounded-xl text-sm font-medium transition"
+                                :class="locationType == 'account' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'"
+                                @click="locationType = 'account'"
+                                :disabled="fetching_location"
+                                >
+                                Yes
+                                </button>
+                                <button
+                                class="px-4 py-2 rounded-xl text-sm font-medium transition"
+                                :class="locationType == 'current' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'"
+                                @click="locationType = 'current'"
+                                :disabled="fetching_location"
+                                >
+                                No
+                                </button>
+                            </div>
+                        </div>
+                        <div v-if="locationType !== null" class="space-y-3">
+                            <div class="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm" ref="error_message" v-if="Object.values(errors).some(error => error)">
+                                <ul class="text-left px-5 m-0 list-disc">
+                                    <li v-for="error in errors" v-if="error"><small>{{ error }}</small></li>
+                                </ul>
+                            </div>
+                            <div class="text-center" v-if="!isGrantedLocation && !fetching_location && locationType == 'current' && !isMessengerBrowser">
+                                <button class="btn btn-success " @click="getLocation()">Allow Location Access</button>
+                            </div>
+                            <!-- <div v-if="!data.userLocation && !fetching_location" class="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm text-center"><small>No Location Data</small></div> -->
+                            <div v-if="fetching_location && !data.userLocation" class="text-center my-3">Please wait, Fetching Location...</div>
+                            <div v-if="!fetching_location && data.userLocation">
+
+                                <l-map :zoom="zoom" :center="center" @ready="onMapReady" class=" h-36 w-full rounded z-0"  ref="map">
+                                    <l-tile-layer :url="tileLayerUrl" />
+                                    <l-marker v-if="data.userLocation" :zIndexOffset="1000"  :lat-lng="data.userLocation" :draggable="true" @moveend="updateLocation">
+                                        <l-popup>Drag me to change location</l-popup>
+                                    </l-marker>
+                                    <l-marker 
+                                        v-for="(marker, index) in tickets_in_range" 
+                                        :key="index" 
+                                        :lat-lng="[marker[1], marker[0]]"
+                                        :icon="customIcon"
+                                    ></l-marker>
+                                    
+                                    
+                                </l-map>
+                            </div>
+                            <p class="text-xs text-gray-500 text-center my-5">
+                                <h3 class="text-center">Kindly fill in the details below. You may <span class="font-bold">drag the location icon</span> to mark your location. </h3>
+                            </p>
+
+                            <!-- <div class="grid grid-cols-2 items-center p-2">
+                                <div class="space-x-2 flex items-center justify-center">
+                                    <input type="radio" id="inlineRadio1" name="inlineRadio" value="account" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
+                                    <h1 for="inlineRadio1" @click="locationType='account'" class="cursor-pointer">Account Number</h1>
+                                    
+                                </div>
+                                <div class="space-x-2 flex items-center justify-center">
+                                    <input type="radio" id="inlineRadio2" name="inlineRadio" value="current" v-model="locationType" :disabled="tickets && tickets.pending_ticket.length > 0">
+                                    <h1 for="inlineRadio2" @click="locationType='current'" class="cursor-pointer">Current location</h1>
+                                </div>
+                            </div> -->
                         <div v-if="locationType == 'manual'" class="space-y-3">
                             <div class="relative space-y-1">
                                 <select
@@ -164,7 +337,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                         </div>
                         <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-3 gap-y-3">
                             <!-- Account Number -->
-                             <div class="relative space-y-1" v-if="locationType == 'account'">
+                            <div class="relative space-y-1" v-if="locationType == 'account'">
                                 <input
                                     id="account"
                                     type="tel"
@@ -303,10 +476,14 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                             </div>
 
                             </div>
+                            <div class="text-center">
+                                <button class="btn btn-primary w-full lg:w-1/2 justify-center" @click="submitReport()" :disabled="isLoading || tickets && tickets.pending_ticket.length > 0">Submit</button>
+                            </div>
+                        </div>
+                        
+                        
                     </div>
-                    <div class="text-center">
-                        <button class="btn btn-primary w-full lg:w-1/2 justify-center" @click="submitReport()" :disabled="isLoading || tickets && tickets.pending_ticket.length > 0">Submit</button>
-                    </div>
+                    
                 </div>
                 <div v-if="isSummary" class="bg-green-50 p-5 rounded-lg border border-green-200 text-green-600">
                     <div class="border-b border-green-200 pb-3 mb-5 text-center">
@@ -316,7 +493,8 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                             </svg>
                         </div>
                         <h1 class="font-semibold text-lg">Thank you!</h1>
-                        <h2 >Your report has been received</h2>
+                        <h1 class="font-medium">Your report has been submitted</h1>
+                        
                     </div>
                     <div class="space-y-1.5 text-gray-800">
                         <div class="flex">
@@ -357,6 +535,10 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                        
                         
                     </div>
+                    <p class="mt-5 text-black">
+                        Note: <br/>
+                        Kindly keep your ticket number for follow-up or status inquiries.
+                    </p>
                 </div>
             </div>
             
@@ -386,7 +568,7 @@ import CryptoJS from "crypto-js";
                 tileLayerUrl: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 userLocation: null, // Stores user's location
                 userLocation2: null,
-                locationType: this.$route.query.type ?? "account",
+                locationType: this.$route.query.type ?? null,
                 fetching_location: false,
                 data: { 
                     userLocation: "", 
@@ -437,7 +619,10 @@ import CryptoJS from "crypto-js";
                 isMessengerBrowser: false,
                 messengerID: null,
                 debouncedValidateField: null,
-                isGrantedLocation: false
+                isGrantedLocation: false,
+                TicketNo: '',
+                isFollowUp: (this.$route.query.account ? false : true) ?? null,
+                followedTicket: null
             };
         },
         created() {
@@ -456,30 +641,35 @@ import CryptoJS from "crypto-js";
            
         },
         mounted(){
-            if (navigator.userAgent.includes("FBAN") || navigator.userAgent.includes("FBAV")) {
-                this.isMessengerBrowser = true;
-                return;
-            }
+            
             if (navigator.permissions) {
                 navigator.permissions.query({ name: "geolocation" }).then((result) => {
                     if (result.state === "granted") {
                         this.isGrantedLocation = true;
                         this.errors.server = ""
-                        if(this.locationType == 'current'){
-                            this.getLocation();
-                        }else{
-                            this.validateAccountNumber()
-                        }
-                        
                     }else{
-                        this.errors.server = "Please allow location access"
+                        this.isGrantedLocation = false;
                     }
+
+                    result.onchange = () => {
+                        if (result.state === "granted") {
+                            this.isGrantedLocation = true;
+                            console.log("✅ User allowed location access");
+                        } else if (result.state === "denied") {
+                            this.isGrantedLocation = false;
+                            console.log("❌ User denied location access");
+                        }
+                    };
                 });
+            }
+            if(this.locationType == 'account'){
+               
+               this.validateAccountNumber();
             }
             
         },
         watch: {
-            locationType(){
+            locationType(newval){
                 this.data.municipality = ""
                 this.data.barangay = ""
                 this.data.zone = ""
@@ -495,13 +685,30 @@ import CryptoJS from "crypto-js";
                 this.errors.account = null
                 this.errors.name = null
                 this.errors.mobile = null
+                this.errors.server = null
 
-                if(this.locationType == 'current'){
+                if(newval == 'current'){
+                    if (navigator.userAgent.includes("FBAN") || navigator.userAgent.includes("FBAV")) {
+                        this.errors.server = "To provide accurate results, we need access to your location. Please open this link in your device’s main browser (like Chrome or Safari), as Facebook Messenger’s built-in browser may not allow location access.";
+                        this.isMessengerBrowser = true;
+                        return;
+                    }else{
+                        this.isMessengerBrowser = false;
+                    }
                     this.getLocation();
                 }
+            },
+            isFollowUp(){
+                this.locationType = null
             }
         },  
         methods: {
+            detectMessengerBrowser(){
+                alert('asdsad')
+                if (navigator.userAgent.includes("FBAN") || navigator.userAgent.includes("FBAV")) {
+                    this.isMessengerBrowser = true;
+                }
+            },
             decryptAES(base64Cipher, hexKey) {
                 try {
                     const key = CryptoJS.enc.Hex.parse(hexKey);
@@ -586,7 +793,7 @@ import CryptoJS from "crypto-js";
                         this.fetching_location = false;
                     } catch (error) {
                         console.error("Error getting location:", error.message);
-                        this.errors.server = "Error getting location"
+                        this.errors.server = "Location access denied. Kindly allow location permissions in your browser settings to proceed."
                         this.fetching_location = false;
                     }
                 } else {
@@ -833,6 +1040,8 @@ import CryptoJS from "crypto-js";
                             this.isLoading = false
                             this.data.userLocation = [0,0];
                             this.data.accountValid = false;
+                            this.data.name = ""
+                            this.data.address = ""
                             this.errors.account = "Account has no location data. Please use current location";
                             return "Account has no location data. Please use current location";
                         }
@@ -944,7 +1153,53 @@ import CryptoJS from "crypto-js";
                     default:
                         return 'Unknown Status';
                 }
-            }
+            },
+            async followUpTicket() {
+                const ticketno = this.TicketNo.trim();
+                
+                if (!ticketno) return;
+                
+                try {
+                    this.errors.ticket = null;
+                    this.isLoading = true;
+                    const response = await fetch(
+                        `${import.meta.env.VITE_API_URL}/ticket/follow_up_ticket/${ticketno}`
+                    );
+                    this.isLoading = false;
+
+                    if (!response.ok) {
+                        this.errors.ticket = "Ticket Not Found";
+                        this.followedTicket = null;
+                        this.$nextTick(() => {
+                            this.$refs.ticketno.focus();
+                        });
+                        return;
+                    }
+                    
+                    const data = await response.json();
+                    this.followedTicket = data;
+                } catch (error) {
+                    this.isLoading = false;
+                    this.errors.ticket = "Network error. Please try again.";
+                    console.error("Network error fetching ticket:", error);
+                }
+            },
+            formatDate(dt){
+                const date = new Date(dt);
+                const formattedDate = date.toLocaleString("en-US", {
+                    timeZone: "Asia/Singapore",
+                    year: "numeric",
+                    month: "long",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: true
+                });
+
+                return formattedDate;
+            },
+
             
         }
     }
