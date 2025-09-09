@@ -146,7 +146,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
 
                                     <div v-if="followedTicket.created_at" class="relative mb-3">
                                         <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 0 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                        <p :class="followedTicket.status == 0 ? 'font-bold' : 'font-medium'">Submitted</p>
+                                        <p :class="followedTicket.status == 0 ? 'font-bold' : 'font-medium'">Open</p>
                                         <p class="text-gray-600" :class="followedTicket.status == 0 ? 'font-semibold' : ''">{{ formatDate(followedTicket.created_at) }}</p>
                                     </div>
 
@@ -168,9 +168,18 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                         <p :class="followedTicket.status == 3 ? 'font-bold' : 'font-medium'">Resolved</p>
                                         <p class="text-gray-600" :class="followedTicket.status == 3 ? 'font-semibold' : ''">{{ formatDate(followedTicket.resolved_at) }}</p>
                                         <p class="text-gray-500 mt-1">{{ followedTicket.remarks }}</p>
-                                        <p class="mt-2" v-if="followedTicket.status == 3">
-                                            <button class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs" @click="updateTicket(followedTicket)">Close Ticket</button>
-                                        </p>
+                                        <div class="mt-2" v-if="followedTicket.status == 3">
+                                            <h1 class="text-sm">Can you confirm if you now have electricity?</h1>
+                                            <div class="flex gap-3 mt-1">
+                                                <button class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs" @click="updateTicket(followedTicket,4)">Yes, I Do</button>
+                                                <button class="bg-red-600 py-1 px-2 rounded text-white hover:bg-red-500 active:bg-red-700 text-xs" @click="updateTicket(followedTicket,5)">No, I Don't</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="followedTicket.reopened_at" class="relative mb-3">
+                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 5 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        <p :class="followedTicket.status == 5 ? 'font-bold' : 'font-medium'">Reopened</p>
+                                        <p class="text-gray-600" :class="followedTicket.status == 5 ? 'font-semibold' : ''">{{ formatDate(followedTicket.reopened_at) }}</p>
                                     </div>
 
                                     <div v-if="followedTicket.closed_at" class="relative">
@@ -1223,10 +1232,10 @@ import CryptoJS from "crypto-js";
 
                 return formattedDate;
             },
-            updateTicket(ticket) {
+            updateTicket(ticket,newStatus){ 
                 this.isLoading = true;
                 axios
-                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${4}`, {
+                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${newStatus}`, {
                         params: {
                             remarks: ''
                         }

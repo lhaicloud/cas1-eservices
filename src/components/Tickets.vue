@@ -101,7 +101,7 @@
 
                                 <div v-if="pending.created_at" class="relative mb-3">
                                     <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="pending.status == 0 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="pending.status == 0 ? 'font-bold' : 'font-medium'">Submitted</p>
+                                    <p :class="pending.status == 0 ? 'font-bold' : 'font-medium'">Open</p>
                                     <p class="text-gray-600" :class="pending.status == 0 ? 'font-semibold' : ''">{{ formatDate(pending.created_at) }}</p>
                                 </div>
 
@@ -122,10 +122,22 @@
                                     <p :class="pending.status == 3 ? 'font-bold' : 'font-medium'">Resolved</p>
                                     <p class="text-gray-600" :class="pending.status == 3 ? 'font-semibold' : ''">{{ formatDate(pending.resolved_at) }}</p>
                                     <p class="text-gray-500 mt-1">{{ pending.remarks }}</p>
-                                    <p class="mt-2">
-                                        <button class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs" @click="updateTicket(pending)">Close Ticket</button>
-                                    </p>
+                                    <div class="mt-2" v-if="pending.status == 3">
+                                        <h1 class="text-sm">Can you confirm if you now have electricity?</h1>
+                                        <div class="flex gap-3 mt-1">
+                                            <button class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs" @click="updateTicket(pending,4)">Yes, I Do</button>
+                                            <button class="bg-red-600 py-1 px-2 rounded text-white hover:bg-red-500 active:bg-red-700 text-xs" @click="updateTicket(pending,5)">No, I Don't</button>
+                                        </div>
+                                    </div>
                                 </div>
+                                <div v-if="pending.reopened_at" class="relative mb-3">
+                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="pending.status == 5 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                    <p :class="pending.status == 5 ? 'font-bold' : 'font-medium'">Reopened</p>
+                                    <p class="text-gray-600" :class="pending.status == 5 ? 'font-semibold' : ''">{{ formatDate(pending.reopened_at) }}</p>
+                                </div>
+                                
+
+
                             </div>
                         </div>
                     </li>
@@ -187,7 +199,7 @@
 
                                 <div v-if="history.created_at" class="relative mb-3">
                                     <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="history.status == 0 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="history.status == 0 ? 'font-bold' : 'font-medium'">Submitted</p>
+                                    <p :class="history.status == 0 ? 'font-bold' : 'font-medium'">Open</p>
                                     <p class="text-gray-600" :class="history.status == 0 ? 'font-semibold' : ''">{{ formatDate(history.created_at) }}</p>
                                 </div>
 
@@ -210,7 +222,11 @@
                                     <p class="text-gray-600" :class="history.status == 3 ? 'font-semibold' : ''">{{ formatDate(history.resolved_at) }}</p>
                                     <p class="text-gray-500 mt-1">{{ history.remarks }}</p>
                                 </div>
-
+                                 <div v-if="history.reopened_at" class="relative mb-3">
+                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="history.status == 5 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                    <p :class="history.status == 5 ? 'font-bold' : 'font-medium'">Reopened</p>
+                                    <p class="text-gray-600" :class="history.status == 5 ? 'font-semibold' : ''">{{ formatDate(history.reopened_at) }}</p>
+                                </div>
                                 <div v-if="history.closed_at" class="relative">
                                     <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="history.status == 4 ? 'bg-blue-500' : 'bg-gray-300'"></div>
                                     <p :class="history.status == 4 ? 'font-bold' : 'font-medium'">Closed</p>
@@ -309,11 +325,11 @@
                 }
                 return deviceId;
             },
-            updateTicket(ticket) {
+            updateTicket(ticket, newStatus) {
                 const troubleshootingRemarks = ticket.remarks
                 this.$store.commit("setLoading", true);
                 axios
-                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${4}`, { params: { remarks: troubleshootingRemarks } })
+                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${newStatus}`, { params: { remarks: troubleshootingRemarks } })
                     .then((response) => {
                         this.$store.commit("setLoading", false);
                         this.getMyTicketHistory();
