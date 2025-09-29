@@ -144,48 +144,47 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 <div class="relative pl-6">
                                     <div class="absolute top-0 left-2 w-0.5 h-full bg-gray-300"></div>
 
-                                    <div v-if="followedTicket.created_at" class="relative mb-3">
-                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 0 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                        <p :class="followedTicket.status == 0 ? 'font-bold' : 'font-medium'">Open</p>
-                                        <p class="text-gray-600" :class="followedTicket.status == 0 ? 'font-semibold' : ''">{{ formatDate(followedTicket.created_at) }}</p>
-                                    </div>
+                                    <div class="relative mb-3 shadow-md rounded-lg p-3 border" :class="index === displayLogs.length - 1 ? 'border-blue-300 bg-blue-50' : 'border-gray-300'"
+                                            v-for="(log, index) in displayLogs"
+                                            :key="log._id">
+                                        <div class="absolute -left-6 top-0 w-4 h-4 rounded-full"
+                                            :class="index === displayLogs.length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        <div class="absolute h-0.5 w-5 -left-5 top-2" :class="index === displayLogs.length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        <p :class="index === displayLogs.length - 1 ? 'font-bold' : 'font-medium'">
+                                            {{ formatStatus(log) }}
+                                        </p>
 
-                                    <div v-if="followedTicket.acknowledged_at" class="relative mb-3">
-                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                        <p :class="followedTicket.status == 1 ? 'font-bold' : 'font-medium'">Acknowledged</p>
-                                        <p class="text-gray-600" :class="followedTicket.status == 1 ? 'font-semibold' : ''">{{ formatDate(followedTicket.acknowledged_at) }}</p>
-                                    </div>
+                                        <p class="text-gray-600"
+                                            :class="index === displayLogs.length - 1 ? 'font-semibold' : ''">
+                                            {{ formatDate(log.created_at) }}
+                                        </p>
 
-                                    <div v-if="followedTicket.troubleshoot_at" class="relative mb-3">
-                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 2 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                        <p :class="followedTicket.status == 2 ? 'font-bold' : 'font-medium'">Troubleshoot Started</p>
-                                        <p class="text-gray-600" :class="followedTicket.status == 2 ? 'font-semibold' : ''">{{ formatDate(followedTicket.troubleshoot_at) }}</p>
-                                        <p class="text-gray-500 mt-1">Our maintenance team is on their way to troubleshoot the issue</p>
-                                    </div>
-
-                                    <div v-if="followedTicket.resolved_at" class="relative mb-3">
-                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 3 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                        <p :class="followedTicket.status == 3 ? 'font-bold' : 'font-medium'">Resolved</p>
-                                        <p class="text-gray-600" :class="followedTicket.status == 3 ? 'font-semibold' : ''">{{ formatDate(followedTicket.resolved_at) }}</p>
-                                        <p class="text-gray-500 mt-1">{{ followedTicket.remarks }}</p>
-                                        <div class="mt-2" v-if="followedTicket.status == 3">
-                                            <h1 class="text-sm">Can you confirm if you now have electricity?</h1>
-                                            <div class="flex gap-3 mt-1">
-                                                <button class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs" @click="updateTicket(followedTicket,4)">Yes, I Do</button>
-                                                <button class="bg-red-600 py-1 px-2 rounded text-white hover:bg-red-500 active:bg-red-700 text-xs" @click="updateTicket(followedTicket,5)">No, I Don't</button>
-                                            </div>
+                                        <p v-if="log.remarks" class="text-gray-500 mt-1">{{ log.remarks }}</p>
+                                        <div 
+                                        class="mt-2"
+                                        v-if="
+                                            log.status_type === 'resolve' &&
+                                            followedTicket.status === 3 &&
+                                            log._id === latestResolveId
+                                        "
+                                        >
+                                        <h1>Can you confirm if you now have electricity?</h1>
+                                        <div class="flex gap-3 mt-1">
+                                            <button
+                                            class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs"
+                                            @click="updateTicket(followedTicket,4)"
+                                            >
+                                            Yes, I Do
+                                            </button>
+                                            <button
+                                            class="bg-red-600 py-1 px-2 rounded text-white hover:bg-red-500 active:bg-red-700 text-xs"
+                                            @click="updateTicket(followedTicket,5)"
+                                            >
+                                            No, I Don't
+                                            </button>
                                         </div>
-                                    </div>
-                                    <div v-if="followedTicket.reopened_at" class="relative mb-3">
-                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 5 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                        <p :class="followedTicket.status == 5 ? 'font-bold' : 'font-medium'">Reopened</p>
-                                        <p class="text-gray-600" :class="followedTicket.status == 5 ? 'font-semibold' : ''">{{ formatDate(followedTicket.reopened_at) }}</p>
-                                    </div>
+                                        </div>
 
-                                    <div v-if="followedTicket.closed_at" class="relative">
-                                        <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="followedTicket.status == 4 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                        <p :class="followedTicket.status == 4 ? 'font-bold' : 'font-medium'">Closed</p>
-                                        <p class="text-gray-600" :class="followedTicket.status == 4 ? 'font-semibold' : ''">{{ formatDate(followedTicket.closed_at) }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -240,7 +239,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 <button class="btn btn-success " @click="getLocation()">Allow Location Access</button>
                             </div>
                             <!-- <div v-if="!data.userLocation && !fetching_location" class="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm text-center"><small>No Location Data</small></div> -->
-                            <div v-if="fetching_location && !data.userLocation" class="text-center my-3">Please wait, Fetching Location...</div>
+                            <div v-if="fetching_location && !data.userLocation" class="text-center my-3 font-bold text-md">Please wait, Fetching Location...</div>
                             <div v-if="!fetching_location && data.userLocation">
 
                                 <l-map :zoom="zoom" :center="center" @ready="onMapReady" class=" h-36 w-full rounded z-0"  ref="map">
@@ -646,8 +645,57 @@ import CryptoJS from "crypto-js";
                 isGrantedLocation: false,
                 TicketNo: '',
                 isFollowUp: (this.$route.query.account !== null ? false : true) ?? false,
-                followedTicket: null
+                followedTicket: null,
+                areaMap: {
+                    '11': 'Libmanan',
+                    '12': 'Cabusao',
+                    '13': 'Pasacao',
+                    '14': 'Pamplona',
+                    '15': 'Gainza',
+                    '16': 'Camaligan',
+                    '17': 'San Fernando',
+                    '18': 'Sipocot',
+                    '19': 'Ragay',
+                    '20': 'Lupi',
+                    '30': 'Del Gallego',
+                }
             };
+        },
+        computed: {
+            displayLogs() {
+                if (!this.followedTicket?.ticket_logs) return [];
+
+                const logs = this.followedTicket.ticket_logs;
+
+                // Normalize created_at to hour:minute
+                const normalizeTime = (dateStr) => {
+                    return new Date(dateStr).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    });
+                };
+
+                const grouped = {};
+                logs.forEach((log) => {
+                    const timeKey = normalizeTime(log.created_at);
+                    const key = `${log.status_type}-${timeKey}`;
+                    if (!grouped[key]) {
+                    grouped[key] = { ...log, created_time: timeKey };
+                    }
+                });
+
+                // Convert grouped object back to array and sort by created_at
+                return Object.values(grouped).sort(
+                    (a, b) => new Date(a.created_at) - new Date(b.created_at)
+                );
+            },
+            latestResolveId() {
+                if (!this.followedTicket?.ticket_logs) return null;
+                const resolves = this.followedTicket.ticket_logs
+                .filter(l => l.status_type === 'resolve')
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // newest first
+                return resolves.length ? resolves[0]._id : null;
+            }
         },
         created() {
             if(this.$route.query.token){
@@ -689,6 +737,8 @@ import CryptoJS from "crypto-js";
             if(this.locationType == 'account'){
                
                this.validateAccountNumber();
+            }else{
+                this.getLocation();
             }
             
         },
@@ -1173,16 +1223,24 @@ import CryptoJS from "crypto-js";
                         .bindPopup(loc.text);
                 });
             },
-            formatStatus(status){
-                switch(status) {
-                    case 0:
+            formatStatus(log){
+                switch(log.status_type) {
+                    case 'open':
                         return 'Open';
-                    case 1:
+                    case 'acknowledge':
+                        return 'Acknowledged';
+                    case 'troubleshoot':
                         return 'Troubleshooting';
-                    case 2:
+                    case 'resolve':
                         return 'Resolved';
-                    case 3:
+                    case 'close':
                         return 'Closed';
+                    case 'transfer':
+                        return 'Transferred to ' + this.areaMap[log.areacode];
+                    case 'reopen':
+                        return 'Reopened';
+                    case 'reassign':
+                        return 'Troubleshooting (Reassigned)';
                     default:
                         return 'Unknown Status';
                 }
@@ -1233,9 +1291,10 @@ import CryptoJS from "crypto-js";
                 return formattedDate;
             },
             updateTicket(ticket,newStatus){ 
+                const userDeviceID = this.$route.query.token && this.messengerID ? this.messengerID : this.getDeviceId()
                 this.isLoading = true;
                 axios
-                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${newStatus}`, {
+                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${newStatus}/${userDeviceID}`, {
                         params: {
                             remarks: ''
                         }

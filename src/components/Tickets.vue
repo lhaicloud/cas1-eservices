@@ -97,48 +97,58 @@
                         <div class="mt-4 border-t pt-3">
                             <h4 class="font-medium mb-3">Timeline</h4>
                             <div class="relative pl-6">
-                                <div class="absolute top-0 left-2 w-0.5 h-full bg-gray-300"></div>
+                            <div class="absolute top-0 left-2 w-0.5 h-full bg-gray-300"></div>
 
-                                <div v-if="pending.created_at" class="relative mb-3">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="pending.status == 0 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="pending.status == 0 ? 'font-bold' : 'font-medium'">Open</p>
-                                    <p class="text-gray-600" :class="pending.status == 0 ? 'font-semibold' : ''">{{ formatDate(pending.created_at) }}</p>
-                                </div>
+                            <div
+                            class="relative mb-3 shadow-md rounded-lg p-3 border"
+                            :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'border-blue-300 bg-blue-50' : 'border-gray-300'"
+                            v-for="(log, index) in displayLogs(pending.ticket_logs)"
+                            :key="log._id"
+                            >
+                            <div class="absolute h-0.5 w-5 -left-5 top-2" :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        
+                            <div class="absolute -left-6 top-0 w-4 h-4 rounded-full"
+                                :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
 
-                                <div v-if="pending.acknowledged_at" class="relative mb-3">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="pending.status == 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="pending.status == 1 ? 'font-bold' : 'font-medium'">Acknowledged</p>
-                                    <p class="text-gray-600" :class="pending.status == 1 ? 'font-semibold' : ''">{{ formatDate(pending.acknowledged_at) }}</p>
-                                </div>
+                            <p :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'font-bold' : 'font-medium'">
+                                {{ formatStatus(log) }}
+                            </p>
 
-                                <div v-if="pending.troubleshoot_at" class="relative mb-3">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="pending.status == 2 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="pending.status == 2 ? 'font-bold' : 'font-medium'">Troubleshoot Started</p>
-                                    <p class="text-gray-600" :class="pending.status == 2 ? 'font-semibold' : ''">{{ formatDate(pending.troubleshoot_at) }}</p>
-                                    <p class="text-gray-500 mt-1">Our maintenance team is on their way to troubleshoot the issue</p>
-                                </div>
-                                 <div v-if="pending.resolved_at" class="relative mb-3">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="pending.status == 3 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="pending.status == 3 ? 'font-bold' : 'font-medium'">Resolved</p>
-                                    <p class="text-gray-600" :class="pending.status == 3 ? 'font-semibold' : ''">{{ formatDate(pending.resolved_at) }}</p>
-                                    <p class="text-gray-500 mt-1">{{ pending.remarks }}</p>
-                                    <div class="mt-2" v-if="pending.status == 3">
-                                        <h1 class="text-sm">Can you confirm if you now have electricity?</h1>
-                                        <div class="flex gap-3 mt-1">
-                                            <button class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs" @click="updateTicket(pending,4)">Yes, I Do</button>
-                                            <button class="bg-red-600 py-1 px-2 rounded text-white hover:bg-red-500 active:bg-red-700 text-xs" @click="updateTicket(pending,5)">No, I Don't</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div v-if="pending.reopened_at" class="relative mb-3">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="pending.status == 5 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="pending.status == 5 ? 'font-bold' : 'font-medium'">Reopened</p>
-                                    <p class="text-gray-600" :class="pending.status == 5 ? 'font-semibold' : ''">{{ formatDate(pending.reopened_at) }}</p>
-                                </div>
-                                
+                            <p class="text-gray-600"
+                                :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'font-semibold' : ''">
+                                {{ formatDate(log.created_at) }}
+                            </p>
 
+                            <p v-if="log.remarks" class="text-gray-500 mt-1">{{ log.remarks }}</p>
 
+                            <!-- ✅ Confirmation only for latest resolve -->
+                            <div
+                                class="mt-2"
+                                v-if="
+                                log.status_type === 'resolve' &&
+                                pending.status === 3 &&
+                                log._id === latestResolveId(pending.ticket_logs)
+                                "
+                            >
+                                <h1>Can you confirm if you now have electricity?</h1>
+                                <div class="flex gap-3 mt-1">
+                                <button
+                                    class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs"
+                                    @click="updateTicket(pending, 4)"
+                                >
+                                    Yes, I Do
+                                </button>
+                                <button
+                                    class="bg-red-600 py-1 px-2 rounded text-white hover:bg-red-500 active:bg-red-700 text-xs"
+                                    @click="updateTicket(pending, 5)"
+                                >
+                                    No, I Don't
+                                </button>
+                                </div>
                             </div>
+                            </div>
+
+                        </div>
                         </div>
                     </li>
 
@@ -192,7 +202,62 @@
                             </div> -->
                         </div>
                         <!-- ✅ Timeline Stepper -->
-                        <div class="mt-4 border-t pt-3">
+                         <div class="mt-4 border-t pt-3">
+                            <h4 class="font-medium mb-3">Timeline</h4>
+                            <div class="relative pl-6">
+                                <div class="absolute top-0 left-2 w-0.5 h-full bg-gray-300"></div>
+
+                                <div
+                               class="relative mb-3 shadow-md rounded-lg p-3 border"
+                                :class="index === displayLogs(history.ticket_logs).length - 1 ? 'border-blue-300 bg-blue-50' : 'border-gray-300'"
+                                v-for="(log, index) in displayLogs(history.ticket_logs)"
+                                :key="log._id"
+                                >
+                                <div class="absolute h-0.5 w-5 -left-5 top-2" :class="index === displayLogs(history.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                <div class="absolute -left-6 top-0 w-4 h-4 rounded-full"
+                                    :class="index === displayLogs(history.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+
+                                <p :class="index === displayLogs(history.ticket_logs).length - 1 ? 'font-bold' : 'font-medium'">
+                                    {{ formatStatus(log) }}
+                                </p>
+
+                                <p class="text-gray-600"
+                                    :class="index === displayLogs(history.ticket_logs).length - 1 ? 'font-semibold' : ''">
+                                    {{ formatDate(log.created_at) }}
+                                </p>
+
+                                <p v-if="log.remarks" class="text-gray-500 mt-1">{{ log.remarks }}</p>
+
+                                <!-- ✅ Confirmation only for latest resolve -->
+                                <div
+                                    class="mt-2"
+                                    v-if="
+                                    log.status_type === 'resolve' &&
+                                    history.status === 3 &&
+                                    log._id === latestResolveId(history.ticket_logs)
+                                    "
+                                >
+                                    <h1 class="text-sm">Can you confirm if you now have electricity?</h1>
+                                    <div class="flex gap-3 mt-1">
+                                    <button
+                                        class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs"
+                                        @click="updateTicket(history, 4)"
+                                    >
+                                        Yes, I Do
+                                    </button>
+                                    <button
+                                        class="bg-red-600 py-1 px-2 rounded text-white hover:bg-red-500 active:bg-red-700 text-xs"
+                                        @click="updateTicket(history, 5)"
+                                    >
+                                        No, I Don't
+                                    </button>
+                                    </div>
+                                </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <!-- <div class="mt-4 border-t pt-3">
                             <h4 class="font-medium mb-3">Timeline</h4>
                             <div class="relative pl-6">
                                 <div class="absolute top-0 left-2 w-0.5 h-full bg-gray-300"></div>
@@ -233,7 +298,7 @@
                                     <p class="text-gray-600" :class="history.status == 4 ? 'font-semibold' : ''">{{ formatDate(history.closed_at) }}</p>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                     </li>
                     <li v-if="tickets && tickets.ticket_history.length == 0 || !tickets" class="text-sm font-medium text-center bg-white p-5 rounded-md border"><h4>No ticket history</h4></li>
                 </ul>
@@ -264,6 +329,29 @@
                     3: 'text-[#26A69A]',
                     4: 'text-[#9E9E9E]',
                 },
+                areaMap: {
+                    '11': 'Libmanan',
+                    '12': 'Cabusao',
+                    '13': 'Pasacao',
+                    '14': 'Pamplona',
+                    '15': 'Gainza',
+                    '16': 'Camaligan',
+                    '17': 'San Fernando',
+                    '18': 'Sipocot',
+                    '19': 'Ragay',
+                    '20': 'Lupi',
+                    '30': 'Del Gallego',
+                },
+                statusMap: {
+                    open: () => 'Open',
+                    acknowledge: () => 'Acknowledged',
+                    troubleshoot: () => 'Troubleshooting',
+                    resolve: () => 'Resolved',
+                    close: () => 'Closed',
+                    reopen: () => 'Reopened',
+                    reassign: () => 'Troubleshooting (Reassigned)',
+                    transfer: (log) => `Transferred to ${this.areaMap?.[log.areacode] || 'Unknown Area'}`
+                },
                 tickets: {
                     pending_ticket: [], 
                     ticket_history: []
@@ -271,36 +359,60 @@
             }
          },
          methods: {
-            formatDate(dt){
+            formatDate(dt) {
+                if (!dt) return "";
                 const date = new Date(dt);
-                const formattedDate = date.toLocaleString("en-US", {
-                    timeZone: "Asia/Singapore",
-                    year: "numeric",
-                    month: "long",
-                    day: "2-digit",
+                return date.toLocaleString("en-US", {
+                timeZone: "Asia/Singapore",
+                year: "numeric",
+                month: "long",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true,
+                });
+            },
+
+            formatStatus(log){
+                const formatter = this.statusMap[log.status_type];
+                return formatter ? formatter(log) : 'Unknown Status';
+            },
+
+            // Returns logs sorted by created_at + only last troubleshoot
+            displayLogs(logs) {
+                if (!logs) return [];
+
+                // Normalize created_at to hour:minute
+                const normalizeTime = (dateStr) => {
+                    return new Date(dateStr).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
-                    second: "2-digit",
-                    hour12: true
+                    });
+                };
+
+                // Group by status_type + created_at (hour:minute)
+                const grouped = {};
+                logs.forEach((log) => {
+                    const timeKey = normalizeTime(log.created_at);
+                    const key = `${log.status_type}-${timeKey}`;
+                    if (!grouped[key]) {
+                    grouped[key] = { ...log, created_time: timeKey };
+                    }
                 });
 
-                return formattedDate;
+                // Convert grouped object back to array and sort by created_at
+                return Object.values(grouped).sort(
+                    (a, b) => new Date(a.created_at) - new Date(b.created_at)
+                );
             },
-            formatStatus(status){
-                switch(status) {
-                    case 0:
-                        return 'Open';
-                    case 1:
-                        return 'Acknowledged';
-                    case 2:
-                        return 'Troubleshooting';
-                    case 3:
-                        return 'Resolved';
-                    case 4:
-                        return 'Closed';
-                    default:
-                        return 'Unknown Status';
-                }
+
+            latestResolveId(logs) {
+                if (!logs) return null;
+                const resolves = logs
+                .filter(l => l.status_type === "resolve")
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // newest first
+                return resolves.length ? resolves[0]._id : null;
             },
             async getMyTicketHistory(){
                 const userDeviceID = this.getDeviceId()
@@ -327,9 +439,10 @@
             },
             updateTicket(ticket, newStatus) {
                 const troubleshootingRemarks = ticket.remarks
+                const userDeviceID = this.$route.query.token && this.messengerID ? this.messengerID : this.getDeviceId()
                 this.$store.commit("setLoading", true);
                 axios
-                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${newStatus}`, { params: { remarks: troubleshootingRemarks } })
+                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${newStatus}/${userDeviceID}`, { params: { remarks: troubleshootingRemarks } })
                     .then((response) => {
                         this.$store.commit("setLoading", false);
                         this.getMyTicketHistory();
