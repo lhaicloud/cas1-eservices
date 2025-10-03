@@ -35,7 +35,9 @@ export default new Vuex.Store({
     isLoading: false,
     electricians: null,
     electricians1: null,
-    psgcdata: []
+    psgcdata: [],
+    accountData: [],
+    curr_billmo: ''
   },
   mutations: {
     setApplication(state, application) {
@@ -79,6 +81,12 @@ export default new Vuex.Store({
     },
     setPsgcData(state,data){
       state.psgcdata = data
+    },
+    updateAccountData (state,data) {
+      state.accountData = data
+    },
+    updatecurr_billmo (state,data) {
+      state.curr_billmo = data
     }
   },
 });

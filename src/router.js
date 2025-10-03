@@ -26,6 +26,7 @@ const routes = [
     name: "BillInquiry",
     component: () => import("./components/BillInquiry.vue")
   },
+  { path: '/bill-inquiry/account', name: 'account', component: () => import("./components/Account.vue") },
   {
     path: "/new-connection-application",
     name: "NewConnectionApplication",

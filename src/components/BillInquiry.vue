@@ -1,9 +1,9 @@
 <template>
     <div class="justify-center text-center flex items-center min-h-screen w-full p-5 text-gray-800">
-      <div class="bg-white w-full lg:max-w-md rounded-lg p-5">
+      <div class="bg-white w-full lg:max-w-md rounded-lg px-5">
         <div>
-          <h1 class="font-bold">Account Verification</h1>
-          <form class="mt-5">
+          <h1 class="font-bold text-lg border-b py-5">Account Verification</h1>
+          <form class="mt-5 p-5">
             
             <div>
               <div class="relative mb-6">
@@ -14,7 +14,6 @@
                 v-model="AccountNumber"
                 maxlength="8"
                 autocomplete="off"
-                placeholder="1234-5678"
                 class="peer block w-full border border-gray-300 rounded-md px-3 pt-4 pb-1.5 text-sm text-gray-900 placeholder-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
               />
               <label
@@ -47,8 +46,8 @@
               >
                 Enter your account name
               </label>
-              <small class="text-gray-400 mt-1 block">
-                Ex. Dela Cruz, Juan S.<br />(not case-sensitive)
+              <small class="text-gray-400 mt-1 block text-start text-xs">
+                Ex. Dela Cruz, Juan S. (not case-sensitive)
               </small>
             </div>
 
@@ -56,7 +55,7 @@
             
             <button
               type="submit"
-              class="btn btn-primary mt-2 mb-2 col-md-12"
+              class="btn btn-primary mt-2 w-full"
               @click.prevent="submit()"
             >
               Verify
@@ -82,11 +81,10 @@ export default {
   },
   methods: {
     submit(){
-              
           var self = this;
-          self.loading = true;
+          self.$store.commit("setLoading", true);
           axios
-          .post(`${import.meta.env.VITE_CASURECO1API_URL}/billinquiry/mobile/findAccount`,
+          .post(`${import.meta.env.VITE_CASURECO1API_URL}/mobile/findAccount`,
             {account_no: self.AccountNumber,accountname: self.AccountName},
             {
               headers: {
@@ -95,17 +93,16 @@ export default {
             }
           )
           .then(response => {
-            // console.log(response)
-            self.loading = false;  
-            var data = response.data.master;
+            self.$store.commit("setLoading", false);
+            var master = response.data.master;
             var billmo = response.data.curr_billmo;
-            self.$store.commit('updateAccountData',data)
-            // self.$store.commit('updatecurr_billmo',billmo)
-            
+            self.$store.commit('updateAccountData',master)
+            self.$store.commit('updatecurr_billmo',billmo)
+            self.$router.push({name: 'account'})
             // var data = response.data;
             // console.log(response.data);
 
-            // this.$swal({
+            // self.$swal({
             //   title: 'Verified',
             //   text: "Account successfully verified!",
             //   icon: 'success',
@@ -124,12 +121,12 @@ export default {
             
           })
           .catch(error => {
-              self.loading = false;
-              // this.$swal({
-              //   icon: 'error',
-              //   title: 'Account Not Found',
-              //   text: 'Note: Account name must be exactly the same with the Billing Notice or Receipt.',
-              // })
+              self.$store.commit("setLoading", false);
+              self.$swal({
+                icon: 'error',
+                title: 'Account Not Found',
+                text: 'Note: Account name must be exactly the same with the Billing Notice or Receipt.',
+              })
 
               console.log(error)
               
