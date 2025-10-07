@@ -580,7 +580,6 @@ import axios from 'axios'
 import SpinnerOverlay from "./SpinnerOverlay.vue";
 import Tickets from "./Tickets.vue";
 import debounce from 'lodash/debounce';
-import CryptoJS from "crypto-js";
 
     export default {
         components: { LMap, LTileLayer, LMarker, LPopup,SpinnerOverlay,Tickets },
@@ -941,7 +940,18 @@ import CryptoJS from "crypto-js";
             getDeviceId() {
                 let deviceId = localStorage.getItem("device_id");
                 if (!deviceId) {
-                    deviceId = crypto.randomUUID(); // Generate a new ID
+                     
+                    if (window.crypto && window.crypto.randomUUID) {
+                        // Modern browsers (Chrome 92+, Edge 92+, Firefox 95+)
+                        deviceId = window.crypto.randomUUID();
+                    } else {
+                        // Fallback for older browsers / Node 18
+                        deviceId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                            const r = Math.random() * 16 | 0;
+                            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                            return v.toString(16);
+                        });
+                    }
                     localStorage.setItem("device_id", deviceId);
                 }
                 return deviceId;
