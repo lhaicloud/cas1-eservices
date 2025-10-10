@@ -164,7 +164,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                         class="mt-2"
                                         v-if="
                                             log.status_type === 'resolve' &&
-                                            followedTicket.status === 3 &&
+                                            followedTicket.status === 4 &&
                                             log._id === latestResolveId
                                         "
                                         >
@@ -172,13 +172,13 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                         <div class="flex gap-3 mt-1">
                                             <button
                                             class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs"
-                                            @click="updateTicket(followedTicket,4)"
+                                            @click="updateTicket(followedTicket,2)"
                                             >
                                             Yes, I Do
                                             </button>
                                             <button
                                             class="bg-red-600 py-1 px-2 rounded text-white hover:bg-red-500 active:bg-red-700 text-xs"
-                                            @click="updateTicket(followedTicket,5)"
+                                            @click="updateTicket(followedTicket,9)"
                                             >
                                             No, I Don't
                                             </button>

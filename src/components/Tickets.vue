@@ -126,7 +126,7 @@
                                 class="mt-2"
                                 v-if="
                                 log.status_type === 'resolve' &&
-                                pending.status === 3 &&
+                                pending.status === 4 &&
                                 log._id === latestResolveId(pending.ticket_logs)
                                 "
                             >
@@ -134,13 +134,13 @@
                                 <div class="flex gap-3 mt-1">
                                 <button
                                     class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs"
-                                    @click="updateTicket(pending, 4)"
+                                    @click="updateTicket(pending, 2)"
                                 >
                                     Yes, I Do
                                 </button>
                                 <button
                                     class="bg-red-600 py-1 px-2 rounded text-white hover:bg-red-500 active:bg-red-700 text-xs"
-                                    @click="updateTicket(pending, 5)"
+                                    @click="updateTicket(pending, 9)"
                                 >
                                     No, I Don't
                                 </button>
@@ -233,7 +233,7 @@
                                     class="mt-2"
                                     v-if="
                                     log.status_type === 'resolve' &&
-                                    history.status === 3 &&
+                                    history.status === 4 &&
                                     log._id === latestResolveId(history.ticket_logs)
                                     "
                                 >
@@ -241,13 +241,13 @@
                                     <div class="flex gap-3 mt-1">
                                     <button
                                         class="bg-blue-600 py-1 px-2 rounded text-white hover:bg-blue-500 active:bg-blue-700 text-xs"
-                                        @click="updateTicket(history, 4)"
+                                        @click="updateTicket(history, 2)"
                                     >
                                         Yes, I Do
                                     </button>
                                     <button
                                         class="bg-red-600 py-1 px-2 rounded text-white hover:bg-red-500 active:bg-red-700 text-xs"
-                                        @click="updateTicket(history, 5)"
+                                        @click="updateTicket(history, 9)"
                                     >
                                         No, I Don't
                                     </button>
@@ -257,48 +257,6 @@
 
                             </div>
                         </div>
-                        <!-- <div class="mt-4 border-t pt-3">
-                            <h4 class="font-medium mb-3">Timeline</h4>
-                            <div class="relative pl-6">
-                                <div class="absolute top-0 left-2 w-0.5 h-full bg-gray-300"></div>
-
-                                <div v-if="history.created_at" class="relative mb-3">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="history.status == 0 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="history.status == 0 ? 'font-bold' : 'font-medium'">Open</p>
-                                    <p class="text-gray-600" :class="history.status == 0 ? 'font-semibold' : ''">{{ formatDate(history.created_at) }}</p>
-                                </div>
-
-                                <div v-if="history.acknowledged_at" class="relative mb-3">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="history.status == 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="history.status == 1 ? 'font-bold' : 'font-medium'">Acknowledged</p>
-                                    <p class="text-gray-600" :class="history.status == 1 ? 'font-semibold' : ''">{{ formatDate(history.acknowledged_at) }}</p>
-                                </div>
-
-                                <div v-if="history.troubleshoot_at" class="relative mb-3">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="history.status == 2 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="history.status == 2 ? 'font-bold' : 'font-medium'">Troubleshoot Started</p>
-                                    <p class="text-gray-600" :class="history.status == 2 ? 'font-semibold' : ''">{{ formatDate(history.troubleshoot_at) }}</p>
-                                    <p class="text-gray-500 mt-1">Our maintenance team is on their way to troubleshoot the issue</p>
-                                </div>
-
-                                <div v-if="history.resolved_at" class="relative mb-3">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="history.status == 3 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="history.status == 3 ? 'font-bold' : 'font-medium'">Resolved</p>
-                                    <p class="text-gray-600" :class="history.status == 3 ? 'font-semibold' : ''">{{ formatDate(history.resolved_at) }}</p>
-                                    <p class="text-gray-500 mt-1">{{ history.remarks }}</p>
-                                </div>
-                                 <div v-if="history.reopened_at" class="relative mb-3">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="history.status == 5 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="history.status == 5 ? 'font-bold' : 'font-medium'">Reopened</p>
-                                    <p class="text-gray-600" :class="history.status == 5 ? 'font-semibold' : ''">{{ formatDate(history.reopened_at) }}</p>
-                                </div>
-                                <div v-if="history.closed_at" class="relative">
-                                    <div class="absolute -left-5 top-3 w-3 h-3 rounded-full" :class="history.status == 4 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                    <p :class="history.status == 4 ? 'font-bold' : 'font-medium'">Closed</p>
-                                    <p class="text-gray-600" :class="history.status == 4 ? 'font-semibold' : ''">{{ formatDate(history.closed_at) }}</p>
-                                </div>
-                            </div>
-                        </div> -->
                     </li>
                     <li v-if="tickets && tickets.ticket_history.length == 0 || !tickets" class="text-sm font-medium text-center bg-white p-5 rounded-md border"><h4>No ticket history</h4></li>
                 </ul>
@@ -323,11 +281,12 @@
             return{
                 activeTab: this.tab || 1,
                 statusClass: {
-                    0: 'text-[#E53935]',
-                    1: 'text-[#FBC02D]',
-                    2: 'text-[#1E88E5]',
-                    3: 'text-[#26A69A]',
-                    4: 'text-[#9E9E9E]',
+                    1: 'text-[#E53935]',
+                    6: 'text-[#FBC02D]',
+                    8: 'text-[#1E88E5]',
+                    4: 'text-[#26A69A]',
+                    2: 'text-[#9E9E9E]',
+                    9: 'text-[#8E24AA]',
                 },
                 areaMap: {
                     '11': 'Libmanan',
