@@ -273,9 +273,9 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 </div>
                             </div> -->
                         
-                        <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-3 gap-y-3" v-if="locationType == 'account'">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-3 gap-y-3">
                             <!-- Account Number -->
-                            <div class="relative space-y-1" >
+                            <div class="relative space-y-1" v-if="locationType == 'account'">
                                 <input
                                     id="account"
                                     type="tel"
