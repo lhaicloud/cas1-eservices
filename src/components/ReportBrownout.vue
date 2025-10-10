@@ -497,6 +497,7 @@ import axios from 'axios'
 import SpinnerOverlay from "./SpinnerOverlay.vue";
 import Tickets from "./Tickets.vue";
 import debounce from 'lodash/debounce';
+import CryptoJS from 'crypto-js';
 
     export default {
         components: { LMap, LTileLayer, LMarker, LPopup,SpinnerOverlay,Tickets },
@@ -623,6 +624,7 @@ import debounce from 'lodash/debounce';
                 const params = new URLSearchParams(window.location.search);
                 const token = params.get('token'); // token is decoded properly now
                 this.messengerID = this.decryptAES(token, import.meta.env.VITE_AES_KEY);
+                console.log("Decrypted Messenger ID:", this.messengerID);
                 localStorage.setItem("device_id", this.messengerID);
             }
 
