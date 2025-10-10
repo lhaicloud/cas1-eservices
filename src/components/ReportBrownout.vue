@@ -604,7 +604,11 @@ import debounce from 'lodash/debounce';
                     message: this.$route.query.message ?? "",
                     account: this.$route.query.account ?? "",
                     address: "",
-                    accountValid : false
+                    accountValid : false,
+                    cfcodeno: "",
+                    cfrotcode: "",
+                    cfacctno: "",
+                    bgy_id: ""
                 },
                 errors: {
                     server: null,
@@ -939,21 +943,16 @@ import debounce from 'lodash/debounce';
             },
             getDeviceId() {
                 let deviceId = localStorage.getItem("device_id");
+
                 if (!deviceId) {
-                     
-                    if (window.crypto && window.crypto.randomUUID) {
-                        // Modern browsers (Chrome 92+, Edge 92+, Firefox 95+)
-                        deviceId = window.crypto.randomUUID();
-                    } else {
-                        // Fallback for older browsers / Node 18
-                        deviceId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-                            const r = Math.random() * 16 | 0;
-                            const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                            return v.toString(16);
-                        });
-                    }
+                    // Generate a random 16-digit integer based on timestamp + randomness
+                    const timestamp = Date.now(); // current milliseconds
+                    const randomPart = Math.floor(Math.random() * 1e6); // up to 6 random digits
+                    deviceId = `${timestamp}${randomPart}`.slice(0, 16); // ensure max 16 digits
+
                     localStorage.setItem("device_id", deviceId);
                 }
+
                 return deviceId;
             },
             resetForms(){
@@ -1019,7 +1018,12 @@ import debounce from 'lodash/debounce';
                     message: rawData.message,
                     uuid: userDeviceID.toString(),
                     account: rawData.account ?? "",
-                    sid: this.$route.query.sid ?? ""
+                    sid: this.$route.query.sid ?? "",
+                    cfcodeno: rawData.cfcodeno ?? "",
+                    cfrotcode: rawData.cfrotcode ?? "",
+                    cfacctno: rawData.cfacctno ?? "",
+                    bgy_id: rawData.bgy_id ?? "",
+                    cfareacode: rawData.cfareacode ?? "",   
                 }
                 self.summaryData = formData
                 // self.$swal({
@@ -1041,6 +1045,7 @@ import debounce from 'lodash/debounce';
                 // }).then((result) => {
                 //     if (result.isConfirmed) {
                         self.isLoading = true
+                       
                         axios.post(`${import.meta.env.VITE_API_URL}/ticket/create`, formData)
                         .then((response) => {
                             self.summaryData.ticket_no = response.data.ticket_no
@@ -1048,20 +1053,6 @@ import debounce from 'lodash/debounce';
                             self.$nextTick(() => {
                                 self.isSummary = true
                             })
-                            // self.$swal({
-                            //     title: 'Report Submitted',
-                            //     html:
-                            //         "<h6>Thank you! Your brownout report has been received</h6><br/>"+
-                            //         `<div style='text-align:left;'><h6>Name: ${formData.name} </h6>`+
-                            //         `<h6>Mobile Number: ${formData.mobile} </h6>`+
-                            //         `<h6>Address: ${address2}</h6>`+
-                            //         "<h6>Ticket No.: ABCDEFGHI</h6>"+
-                            //         `<h6>Date: ${curr_datetime.toLocaleString()} </h6> ${formData.message.length > 0 ? `<h6>Message: ${formData.message}</h6>` : ''}</div>`,
-                            //     icon: 'success',
-                            //     customClass: {
-                            //         title: "swal-custom-title",
-                            //     },
-                            // })
                             self.isLoading = false
                             self.resetForms()
                         })
@@ -1146,6 +1137,11 @@ import debounce from 'lodash/debounce';
                         this.data.accountValid = true;
                         this.data.name = data.data.account_name;
                         this.data.address = data.data.account_address;
+                        this.data.cfcodeno = data.data.cfcodeno;
+                        this.data.cfrotcode = data.data.cfrotcode;
+                        this.data.cfacctno = data.data.cfacctno;
+                        this.data.bgy_id = data.data.bgy_id;
+                        this.data.cfareacode = data.data.cfareacode;
                         
                         console.log(this.data.userLocation)
                         this.userLocation2 = [data.data.nflatitude, data.data.nflongitude];
