@@ -653,12 +653,12 @@ import CryptoJS from 'crypto-js';
                     };
                 });
             }
-            if(this.locationType == 'account'){
+            // if(this.locationType == 'account'){
                
-               this.validateAccountNumber();
-            }else{
-                this.getLocation();
-            }
+            //    this.validateAccountNumber();
+            // }else{
+            //     this.getLocation();
+            // }
             
         },
         watch: {
