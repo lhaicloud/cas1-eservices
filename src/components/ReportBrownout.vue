@@ -272,93 +272,10 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                     <h1 for="inlineRadio2" @click="locationType='current'" class="cursor-pointer">Current location</h1>
                                 </div>
                             </div> -->
-                        <div v-if="locationType == 'manual'" class="space-y-3">
-                            <div class="relative space-y-1">
-                                <select
-                                    ref="mun"
-                                    id="mun"
-                                    v-model="data.municipality"
-                                    @change="getBrgy()"
-                                    @blur="validateField('municipality')"
-                                    :class="[
-                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm appearance-none focus:outline-none focus:ring-1',
-                                    errors.municipality ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
-                                    ]"
-                                    :disabled="tickets && tickets.pending_ticket.length > 0"
-                                >
-                                    <!-- <option disabled value="">Please Select</option> -->
-                                    <option :value="mun" v-for="mun in municipalities" :key="mun.id">{{ mun.name }}</option>
-                                </select>
-                                <label
-                                    for="mun"
-                                    :class="[
-                                    'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
-                                    (data.municipality) ? '-top-2 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
-                                    errors.municipality ? 'bg-red-100 text-red-500' : 'bg-white',
-                                    ]"
-                                    class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
-                                >
-                                    Municipality: <span class="text-red-500">*</span>
-                                </label>
-                            </div>
-                            <div class="relative space-y-1">
-                                <select
-                                    ref="bgy"
-                                    id="bgy"
-                                    v-model="data.barangay"
-                                    @blur="validateField('barangay')"
-                                    :class="[
-                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm appearance-none focus:outline-none focus:ring-1',
-                                    errors.barangay ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
-                                    ]"
-                                    :disabled="!data.municipality || (tickets && tickets.pending_ticket.length > 0)"
-                                >
-                                    <!-- <option disabled value="">Please Select</option> -->
-                                    <option :value="bgy" v-for="bgy in brgys" :key="bgy.id">{{ bgy.name }}</option>
-                                </select>
-                                <label
-                                    for="bgy"
-                                    :class="[
-                                    'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
-                                    data.barangay ? '-top-2 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
-                                    errors.barangay ? 'bg-red-100 text-red-500' : 'bg-white',
-                                    ]"
-                                    class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
-                                >
-                                    Barangay: <span class="text-red-500">*</span>
-                                </label>
-                                </div>
-
-                                <div class="relative space-y-1">
-                                <input
-                                    id="zone"
-                                    type="text"
-                                    v-model="data.zone"
-                                    @blur="validateField('zone')"
-                                    :class="[
-                                    'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1',
-                                    errors.zone ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
-                                    ]"
-                                    :disabled="tickets && tickets.pending_ticket.length > 0"
-                                    placeholder=" "
-                                    autocomplete="off"
-                                />
-                                <label
-                                    for="zone"
-                                    :class="[
-                                    'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
-                                    data.zone ? '-top-2 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
-                                    errors.zone ? 'text-red-500' : 'bg-white',
-                                    ]"
-                                    class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
-                                >
-                                    Sitio/Zone/Street: <span class="text-red-500">*</span>
-                                </label>
-                                </div>
-                        </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-3 gap-y-3">
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 lg:gap-3 gap-y-3" v-if="locationType == 'account'">
                             <!-- Account Number -->
-                            <div class="relative space-y-1" v-if="locationType == 'account'">
+                            <div class="relative space-y-1" >
                                 <input
                                     id="account"
                                     type="tel"
@@ -702,6 +619,7 @@ import debounce from 'lodash/debounce';
         },
         created() {
             if(this.$route.query.token){
+                
                 const params = new URLSearchParams(window.location.search);
                 const token = params.get('token'); // token is decoded properly now
                 this.messengerID = this.decryptAES(token, import.meta.env.VITE_AES_KEY);
