@@ -214,7 +214,6 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 class="px-4 py-2 rounded-xl text-sm font-medium transition"
                                 :class="locationType == 'account' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'"
                                 @click="locationType = 'account'"
-                                :disabled="fetching_location"
                                 >
                                 Yes
                                 </button>
@@ -222,7 +221,6 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 class="px-4 py-2 rounded-xl text-sm font-medium transition"
                                 :class="locationType == 'current' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'"
                                 @click="locationType = 'current'"
-                                :disabled="fetching_location"
                                 >
                                 No
                                 </button>
@@ -620,11 +618,9 @@ import CryptoJS from 'crypto-js';
         },
         created() {
             if(this.$route.query.token){
-                
                 const params = new URLSearchParams(window.location.search);
                 const token = params.get('token'); // token is decoded properly now
                 this.messengerID = this.decryptAES(token, import.meta.env.VITE_AES_KEY);
-                console.log("Decrypted Messenger ID:", this.messengerID);
                 localStorage.setItem("device_id", this.messengerID);
             }
 
