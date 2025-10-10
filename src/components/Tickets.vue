@@ -401,7 +401,7 @@
                 const userDeviceID = this.$route.query.token && this.messengerID ? this.messengerID : this.getDeviceId()
                 this.$store.commit("setLoading", true);
                 axios
-                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${newStatus}/${userDeviceID}`, { params: { remarks: troubleshootingRemarks } })
+                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket.ticket_no}/${newStatus}/${userDeviceID}`, { params: { remarks: troubleshootingRemarks } })
                     .then((response) => {
                         this.$store.commit("setLoading", false);
                         this.getMyTicketHistory();

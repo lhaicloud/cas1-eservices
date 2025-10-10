@@ -1216,7 +1216,7 @@ import CryptoJS from 'crypto-js';
                 const userDeviceID = this.$route.query.token && this.messengerID ? this.messengerID : this.getDeviceId()
                 this.isLoading = true;
                 axios
-                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket._id}/${newStatus}/${userDeviceID}`, {
+                    .get(`${import.meta.env.VITE_API_URL}/ticket/update/${ticket.ticket_no}/${newStatus}/${userDeviceID}`, {
                         params: {
                             remarks: ''
                         }
