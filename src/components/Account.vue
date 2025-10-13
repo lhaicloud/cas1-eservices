@@ -24,7 +24,6 @@
             <span class="font-bold">{{ curr_month }} {{ curr_year }}</span>
             is not yet uploaded. Will be uploaded soon. Thank you.
         </div>
-
         <!-- Current Bill -->
         <div v-if="loaded && curr_index >= 0" class="flex flex-wrap px-4 border-b">
             <div class="w-full text-center py-5">

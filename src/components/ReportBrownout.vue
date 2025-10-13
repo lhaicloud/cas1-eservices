@@ -27,7 +27,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                             Submit A Report
                         </li>
                         <li class="p-2 cursor-pointer hover:border-b-2 hover:border-blue-500" :class="isFollowUp ? 'border-b-2 text-blue-700 border-blue-700 font-semibold hover:border-blue-700 hover:border-b-2' : ''" @click="isFollowUp = true;"> 
-                            Follow-up Report
+                            Track Report
                         </li>
                     </ul>
                     <!-- <div class="space-y-3 p-4 rounded-2xl shadow bg-white border">
@@ -897,7 +897,6 @@ import CryptoJS from 'crypto-js';
             },
             async submitReport(){
                 var self = this
-                
                 self.errors.server = null
                
                 if(self.tickets && self.tickets.pending_ticket.length > 0){
