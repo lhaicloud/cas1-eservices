@@ -144,17 +144,15 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 <div class="relative pl-6">
                                     <div class="absolute top-0 left-2 w-0.5 h-full bg-gray-300"></div>
 
-                                    <div class="relative mb-3 shadow-md rounded-lg p-3 border" :class="index === displayLogs.length - 1 ? 'border-blue-300 bg-blue-50' : 'border-gray-300'"
+                                    <div class="relative mb-3 shadow-md rounded-lg p-3 border border-gray-300" :class="index === displayLogs.length - 1 && followedTicket.status != 2 ? ' bg-blue-100' : ''"
                                             v-for="(log, index) in displayLogs"
                                             :key="log._id">
-                                        <div class="absolute -left-6 top-0 w-4 h-4 rounded-full"
-                                            :class="index === displayLogs.length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                        <div class="absolute h-0.5 w-5 -left-5 top-2" :class="index === displayLogs.length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        <div class="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" :class="index === displayLogs.length - 1 && followedTicket.status != 2 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                        <!-- <div class="absolute h-0.5 w-5 -left-5 top-2" :class="index === displayLogs.length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div> -->
                                         <p :class="index === displayLogs.length - 1 ? 'font-bold' : 'font-medium'">
                                             {{ formatStatus(log) }}
                                         </p>
-
-                                        <p class="text-gray-600"
+                                        <p
                                             :class="index === displayLogs.length - 1 ? 'font-semibold' : ''">
                                             {{ formatDate(log.created_at) }}
                                         </p>
@@ -282,6 +280,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                     :class="[
                                     'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1',
                                     errors.account ? 'border-red-500 ring-red-500 ' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    tickets && tickets.pending_ticket.length > 0 ? 'cursor-not-allowed' : ''
                                     ]"
                                     :disabled="tickets && tickets.pending_ticket.length > 0"
                                     placeholder=" "
@@ -294,6 +293,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                     'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
                                     (data.account) ? '-top-3 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
                                     errors.account ? '' : '',
+                                    tickets && tickets.pending_ticket.length > 0 ? 'cursor-not-allowed' : ''
                                     ]"
                                     class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
                                     ref="accountLabel"
@@ -312,6 +312,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 :class="[
                                     'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1',
                                     errors.mobile ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    tickets && tickets.pending_ticket.length > 0 ? 'cursor-not-allowed' : ''
                                 ]"
                                 :disabled="tickets && tickets.pending_ticket.length > 0"
                                 placeholder=" "
@@ -322,6 +323,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 :class="[
                                     'absolute left-3 bg-white px-1 transition-all duration-200 ease-in-out text-gray-500',
                                     data.mobile ? '-top-3 text-xs text-blue-500' : 'top-2 text-sm',
+                                    tickets && tickets.pending_ticket.length > 0 ? 'cursor-not-allowed' : ''
                                 ]"
                                 class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500"
                                 >
@@ -339,6 +341,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                     :class="[
                                     'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 uppercase',
                                     errors.name ? 'border-red-500 ring-red-500 ' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    tickets && tickets.pending_ticket.length > 0 ? 'cursor-not-allowed' : ''
                                     ]"
                                     :disabled="tickets && tickets.pending_ticket.length > 0"
                                     placeholder=" "
@@ -350,6 +353,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                     'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
                                     (data.name) ? '-top-3 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
                                     errors.name ? '' : '',
+                                    tickets && tickets.pending_ticket.length > 0 ? 'cursor-not-allowed' : ''
                                     ]"
                                     class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
                                     ref="nameLabel"
@@ -368,6 +372,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                     :class="[
                                     'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 uppercase',
                                     errors.address ? 'border-red-500 ring-red-500 ' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
+                                    tickets && tickets.pending_ticket.length > 0 ? 'cursor-not-allowed' : ''
                                     ]"
                                     :disabled="tickets && tickets.pending_ticket.length > 0"
                                     placeholder=" "
@@ -379,6 +384,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                     'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
                                     (data.address) ? '-top-3 text-xs text-blue-500 bg-white' : 'top-2 text-sm bg-transparent',
                                     errors.address ? '' : '',
+                                    tickets && tickets.pending_ticket.length > 0 ? 'cursor-not-allowed' : ''
                                     ]"
                                     class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
                                     ref="addressLabel"
@@ -398,12 +404,14 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 :disabled="tickets && tickets.pending_ticket.length > 0"
                                 placeholder="(Optional, but it’s helpful for us to understand your issue better)"
                                 class="peer block w-full border border-gray-300 rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                :class="tickets && tickets.pending_ticket.length > 0 ? 'cursor-not-allowed' : ''"
                                 ></textarea>
                                 <label
                                 for="message"
                                 :class="[
                                     'absolute left-3 bg-white px-1 transition-all duration-200 ease-in-out text-gray-500',
                                     data.message ? '-top-3 text-xs text-blue-500' : 'top-2 text-sm',
+                                    tickets && tickets.pending_ticket.length > 0 ? 'cursor-not-allowed' : ''
                                 ]"
                                 class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500"
                                 >

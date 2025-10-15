@@ -2,7 +2,7 @@
     <div class="text-xs lg:text-base justify-center flex">
         
         <div class="w-full md:w-2/3 xl:w-2/5 pb-10">
-            <div class="flex items-center gap-3 px-3 py-2">
+            <div class="flex items-center gap-3 px-3 py-2 text-base">
                 <router-link :to="{ name: 'ReportBrownout'}" class="text-white">< Back</router-link>
             </div>
             <ul class="flex items-center px-3 gap-3 py-3 ">
@@ -100,15 +100,14 @@
                             <div class="absolute top-0 left-2 w-0.5 h-full bg-gray-300"></div>
 
                             <div
-                            class="relative mb-3 shadow-md rounded-lg p-3 border"
-                            :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'border-blue-300 bg-blue-50' : 'border-gray-300'"
+                            class="relative mb-3 shadow-md rounded-lg p-3 border border-gray-300"
+                            :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'bg-blue-100' : ''"
                             v-for="(log, index) in displayLogs(pending.ticket_logs)"
                             :key="log._id"
                             >
-                            <div class="absolute h-0.5 w-5 -left-5 top-2" :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                            <!-- <div class="absolute h-0.5 w-5 -left-5 top-1/2" :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div> -->
                                         
-                            <div class="absolute -left-6 top-0 w-4 h-4 rounded-full"
-                                :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                            <div class="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
 
                             <p :class="index === displayLogs(pending.ticket_logs).length - 1 ? 'font-bold' : 'font-medium'">
                                 {{ formatStatus(log) }}
@@ -208,20 +207,19 @@
                                 <div class="absolute top-0 left-2 w-0.5 h-full bg-gray-300"></div>
 
                                 <div
-                               class="relative mb-3 shadow-md rounded-lg p-3 border"
-                                :class="index === displayLogs(history.ticket_logs).length - 1 ? 'border-blue-300 bg-blue-50' : 'border-gray-300'"
+                               class="relative mb-3 shadow-md rounded-lg p-3 border border-gray-300"
+                                :class="index === displayLogs(history.ticket_logs).length - 1 && history.status != 2 ? ' bg-blue-100 ' : ''"
                                 v-for="(log, index) in displayLogs(history.ticket_logs)"
                                 :key="log._id"
                                 >
-                                <div class="absolute h-0.5 w-5 -left-5 top-2" :class="index === displayLogs(history.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
-                                <div class="absolute -left-6 top-0 w-4 h-4 rounded-full"
-                                    :class="index === displayLogs(history.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                                <!-- <div class="absolute h-0.5 w-5 -left-5 top-2" :class="index === displayLogs(history.ticket_logs).length - 1 ? 'bg-blue-500' : 'bg-gray-300'"></div> -->
+                                <div class="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full" :class="index === displayLogs(history.ticket_logs).length - 1 && history.status != 2 ? 'bg-blue-500' : 'bg-gray-300'"></div>
 
                                 <p :class="index === displayLogs(history.ticket_logs).length - 1 ? 'font-bold' : 'font-medium'">
                                     {{ formatStatus(log) }}
                                 </p>
 
-                                <p class="text-gray-600"
+                                <p
                                     :class="index === displayLogs(history.ticket_logs).length - 1 ? 'font-semibold' : ''">
                                     {{ formatDate(log.created_at) }}
                                 </p>
