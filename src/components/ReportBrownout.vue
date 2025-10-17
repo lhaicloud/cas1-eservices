@@ -529,10 +529,10 @@ import CryptoJS from 'crypto-js';
                     account: this.$route.query.account ?? "",
                     address: "",
                     accountValid : false,
-                    cfcodeno: "",
-                    cfrotcode: "",
-                    cfacctno: "",
-                    bgy_id: ""
+                    cfcodeno: null,
+                    cfrotcode: null,
+                    cfacctno: null,
+                    bgy_id: null
                 },
                 errors: {
                     server: null,
@@ -949,12 +949,12 @@ import CryptoJS from 'crypto-js';
                     message: rawData.message,
                     uuid: userDeviceID.toString(),
                     account: rawData.account ?? "",
-                    sid: this.$route.query.sid ?? "",
-                    cfcodeno: rawData.cfcodeno ?? "",
-                    cfrotcode: rawData.cfrotcode ?? "",
-                    cfacctno: rawData.cfacctno ?? "",
-                    bgy_id: rawData.bgy_id ?? "",
-                    cfareacode: rawData.cfareacode ?? "",   
+                    // sid: this.$route.query.sid ?? "",
+                    cfcodeno: rawData.cfcodeno ?? null,
+                    cfrotcode: rawData.cfrotcode ?? null,
+                    cfacctno: rawData.cfacctno ?? null,
+                    bgy_id: rawData.bgy_id ?? null,
+                    cfareacode: rawData.cfareacode ?? null,   
                 }
                 self.summaryData = formData
                 // self.$swal({
