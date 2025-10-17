@@ -585,6 +585,14 @@ import CryptoJS from 'crypto-js';
                     '19': 'Ragay',
                     '20': 'Lupi',
                     '30': 'Del Gallego',
+                },
+                caoMap: {
+                    '45': 'CAO 1',
+                    '46': 'CAO 2',
+                    '47': 'CAO 3',
+                    '48': 'CAO 4',
+                    '49': 'CAO 5',
+                    '50': 'CAO 6',
                 }
             };
         },
@@ -1165,7 +1173,7 @@ import CryptoJS from 'crypto-js';
                     case 'close':
                         return 'Closed';
                     case 'transfer':
-                        return 'Transferred to ' + this.areaMap[log.areacode];
+                        return 'Transferred to ' + this.caoMap[log.idgroup3];
                     case 'reopen':
                         return 'Reopened';
                     case 'reassign':

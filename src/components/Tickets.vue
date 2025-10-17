@@ -299,6 +299,14 @@
                     '20': 'Lupi',
                     '30': 'Del Gallego',
                 },
+                caoMap: {
+                    '45': 'CAO 1',
+                    '46': 'CAO 2',
+                    '47': 'CAO 3',
+                    '48': 'CAO 4',
+                    '49': 'CAO 5',
+                    '50': 'CAO 6',
+                },
                 statusMap: {
                     open: () => 'Open',
                     acknowledge: () => 'Acknowledged',
@@ -307,7 +315,7 @@
                     close: () => 'Closed',
                     reopen: () => 'Reopened',
                     reassign: () => 'Troubleshooting (Reassigned)',
-                    transfer: (log) => `Transferred to ${this.areaMap?.[log.areacode] || 'Unknown Area'}`
+                    transfer: (log) => `Transferred to ${this.caoMap?.[log.idgroup3] || 'Unknown Area'}`
                 },
                 tickets: {
                     pending_ticket: [], 
