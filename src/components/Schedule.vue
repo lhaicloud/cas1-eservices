@@ -33,22 +33,26 @@
             class="h-10"
           ></div>
           <div
-            v-if="isAvailable(day)"
             v-for="day in daysInMonth"
             :key="day"
-            class="h-10 flex items-center justify-center rounded-lg text-white cursor-pointer transition-all duration-150"
-            @click="selectDay(day)"
-            :class="isSelected(day) ? 'bg-blue-500' : 'bg-gray-400'"
           >
-            {{ day }}
-          </div>
-          <!-- Unavailable date -->
-          <div
-            v-if="!isAvailable(day)"
-            :key="'unavailable-' + day"
-            class="h-10 flex items-center justify-center rounded-lg text-gray-400 opacity-50 cursor-not-allowed"
-          >
-            {{ day }}
+            <!-- Available date -->
+            <div
+              v-if="isAvailable(day)"
+              class="h-10 flex items-center justify-center rounded-lg text-white cursor-pointer transition-all duration-150"
+              @click="selectDay(day)"
+              :class="isSelected(day) ? 'bg-blue-500' : 'bg-gray-400'"
+            >
+              {{ day }}
+            </div>
+
+            <!-- Unavailable date -->
+            <div
+              v-else
+              class="h-10 flex items-center justify-center rounded-lg text-gray-400 opacity-50 cursor-not-allowed"
+            >
+              {{ day }}
+            </div>
           </div>
         </div>
         <div
