@@ -31,6 +31,7 @@ export default new Vuex.Store({
       applicant_barangay: null,
       no_electrician: 0,
       classification: null,
+      concern: "None",
     },
     isLoading: false,
     electricians: null,

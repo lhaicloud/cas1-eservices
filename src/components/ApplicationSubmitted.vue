@@ -5,9 +5,9 @@
             Application {{ title}}
         </h1>
         <p class="mt-5 text-justify">
-            Your application has been successfully submitted. A confirmation email, including the necessary form, has been sent to your provided email address. 
+            Your application has been successfully submitted. A confirmation email, including the necessary form, <span class="font-bold">has been sent to {{ application.email }}</span>. 
             Please ensure that all required documents are complete and ready prior to your scheduled appointment. We kindly ask that you arrive on time. 
-            Your Reference Number is <span class="font-medium">{{ application.reference_number }}.</span>
+            Your Reference Number is <span class="font-medium font-mono">{{ application.reference_number }}.</span>
         </p>
         <div class="flex justify-center mt-5">
             <svg ref="barcode"></svg>
@@ -35,6 +35,24 @@
                 <li>Application For Membership</li>
                 <li>Electrical Inspection Report</li>
             </ul>
+        </div>
+        <div class="text-left mt-5 text-xs w-full md:w-1/3 border border-green-100 p-3 rounded-md bg-green-50" v-if="application.fees?.length > 0">
+            <h1 class="font-bold border-b border-gray-300 pb-3 pt-2 text-center">FEES</h1>
+            <ul class="mt-2 space-y-1">
+                <li class="flex items-center" v-for="fee in application.fees" :key="fee.idfees1">
+                    <div class="flex-1">
+                        {{ fee.cfdescript }}
+                    </div>
+                    <div class="flex-1 text-end">
+                        {{ fee.nfamount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                    </div>
+                </li>
+                <li class="flex items-center border-t border-gray-300 pt-3 pb-2 font-bold">
+                    <div class="flex-1">Total</div>
+                    <div class="flex-1 text-end">{{ totalFees.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
+                </li>
+            </ul>
+
         </div>
         <!-- <button class="btn btn-primary mt-5" @click="downloadForms()" v-if="!application.dfapply || application.dfapply == '0000-00-00'">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" /></svg>
@@ -106,6 +124,15 @@ export default {
                 return 'Received'
             }
             return "Submitted"
+        },
+        totalFees(){
+            return this.application?.fees ? this.application?.fees?.reduce((sum, fee) => sum + Number(fee.nfamount), 0) : 0;
+        },
+        totalPayment() {
+            return this.application ? this.application?.fees?.filter(fee => fee.dfpaid && fee.dfpaid !== "0000-00-00").reduce((sum, fee) => sum + Number(fee.nfamount), 0) : 0;
+        },
+        balance(){
+            return this.totalFees - this.totalPayment;
         }
     },
   mounted() {

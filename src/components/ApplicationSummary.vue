@@ -94,7 +94,7 @@
                   : "None"
               }}</span>
             </div>
-            <div class="md:col-span-3">
+            <div class="md:col-span-3" v-if="application.service_type.cfnewconnect == 'YES'">
               <h1 class="font-medium">Pre-Membership Seminar Schedule</h1>
               <div class="md:grid grid-cols-3">
                 <div class="mt-2">

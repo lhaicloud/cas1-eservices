@@ -2,53 +2,77 @@
     <div class="justify-center text-center min-h-screen w-full text-white p-4">
       <div class="w-full mx-auto space-y-2">
         <div class="w-full max-w-4xl mx-auto bg-white py-3 rounded-lg">
+          
             <div  ref="stepContainer" class="flex items-center justify-between overflow-x-scroll px-2 overflow-y-hidden">
-              
               <div
                 v-for="(stepLabel, index) in visibleSteps"
-                :key="index"
+                :key="stepLabel"
                 class="flex-1 flex flex-col items-center relative bg-gray-100 p-2"
                 :class="(visibleSteps.length > 4 ? 'px-2' : '')"
                 :style="{ minWidth: 'max-content' }"
                 :ref="index === application.step - 1 ? 'activeStep' : null"
               >
+              
                 <!-- Connector line -->
                 <div
                   class="absolute top-1/3 left-0 w-full h-1 z-0"
                 >
                   <div
-                    :class="[
-                      'h-full',
-                      index <= application.step - 1 ? 'bg-blue-500' : 'bg-gray-300'
-                    ]"
+                    class="h-full bg-blue-500"
+                    :class="{
+                      'bg-blue-500 text-white border-blue-500': index < application.step - 1,
+                      'bg-orange-500': concerns[index + 1] == application.concern,
+                      'bg-gray-200': index > application.step - 1,
+                    }"
                   ></div>
                 </div>
 
                 <!-- Step Circle -->
                 <div
                   class="z-10 flex items-center justify-center w-8 h-8 border-2 rounded-full text-sm font-bold"
-                  :class="[
-                    index < application.step - 1 ? 'bg-blue-500 text-white border-blue-500' :
-                    index === application.step - 1 ? 'bg-white border-blue-500 text-blue-500' :
-                    'bg-white border-gray-300 text-gray-400'
-                  ]"
+                  :class="{
+                    'bg-blue-500 text-white border-blue-500': index < application.step - 1,
+                    'bg-orange-100 border-orange-500 text-orange-500': concerns[index + 1] == application.concern,
+                    'bg-white border-blue-500 text-blue-500': index === application.step - 1,
+                    'bg-white border-gray-300 text-gray-400': index > application.step - 1
+                  }"
                 >
-                  
-                  <!-- <span v-if="index + 1 < application.step" class="text-lg">✓</span> -->
+                  <!-- Completed steps -->
+                  <div v-if="index < application.step - 1">
+                    <!-- Step 6 (index 5) with remarks -->
+                    <span v-if="concerns[index + 1] == application.concern" class="text-md">⚠️</span>
 
-                  <svg v-if="index === application.step - 1" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 animate-spin-slow" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.007 7.007 0 0 0-1.69-.98l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42l-.38 2.65a7.007 7.007 0 0 0-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.5.38 1.05.7 1.69.98l.38 2.65A.5.5 0 0 0 10 22h4a.5.5 0 0 0 .5-.42l.38-2.65a7.007 7.007 0 0 0 1.69-.98l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/>
-                  </svg>
-                  <span v-else>
-                    {{ index + 1 < application.step  ? '✓' : index + 1 }}
+                    <!-- Other previous steps without remarks -->
+                    <span v-else>✓</span>
+                  </div>  
+                  <!-- Current step -->
+                  <span v-if="index === application.step - 1">
+                      <!-- If concern matches -->
+                      <span v-if="concerns[index + 1] === application.concern" class="text-md">⚠️</span>
+                      
+                      <!-- Else show spinner -->
+                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 animate-spin-slow" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19.43 12.98c.04-.32.07-.65.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.007 7.007 0 0 0-1.69-.98l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42l-.38 2.65a7.007 7.007 0 0 0-1.69.98l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1c.5.38 1.05.7 1.69.98l.38 2.65A.5.5 0 0 0 10 22h4a.5.5 0 0 0 .5-.42l.38-2.65a7.007 7.007 0 0 0 1.69-.98l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/>
+                      </svg>
                   </span>
+                  
+                  <!-- If NOT the current step → show step number -->
+                  <span v-if="index > application.step - 1">{{ index + 1 }}</span>
 
+                  <!-- Future steps -->
+                  <!-- <span v-if="index > application.step - 1 && concerns[index + 1] != application.concern">{{ index + 1 }}</span> -->
                 </div>
+
+                
 
                 <!-- Label -->
                 <span
                   class="mt-2 text-xs text-center"
-                  :class="index <= application.step - 1 ? 'text-blue-600 font-medium' : 'text-gray-400'"
+                  :class="{
+                    'text-gray-400 font-medium': index <= application.step - 1 || index > application.step - 1,
+                    'text-orange-600': concerns[index + 1] == application.concern,
+                    
+                  }"
                 >
                   {{ stepLabel }}
                 </span>
@@ -66,33 +90,46 @@
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-1 lg:max-w-4xl lg:mx-auto">
            
-            <div v-if="application.step >= 5" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-sm text-start flex items-center space-x-2">
+            <div v-if="application.step >= 5" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-xs text-start flex items-center space-x-2">
                 <div class="z-10 flex items-center justify-center w-5 h-5 border-2 rounded-full text-xs font-bold bg-green-500 border-green-500 text-white">✓</div> 
-                <h1>{{ formatDate(application.submitted_at) }} - Submitted</h1>
+                <h1>Application Submitted <br><small>{{ formatDate(application.submitted_at) }}</small></h1> 
             </div>
-            <div v-if="application.step >= 6" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-sm text-start flex items-center space-x-2">
+            <div v-if="application.dfapply && application.dfapply != '0000-00-00' && concerns[5] != application.concern" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-xs text-start flex items-center space-x-2">
                 <div class="z-10 flex items-center justify-center w-5 h-5 border-2 rounded-full text-xs font-bold bg-green-500 border-green-500 text-white">✓</div> 
-                <h1>{{ formatDate(application.dfapply) }} - Received</h1>
+                <h1>Application Received {{ application.dfinspect == '0000-00-00' ? '- For Inspection' : '' }} <br> <small>{{ formatDate(application.dfapply) }}</small></h1>
             </div>
-            <div v-if="application.step >= 7" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-sm text-star flex items-center space-x-2">
-                <div class="z-10 flex items-center justify-center w-5 h-5 border-2 rounded-full text-xs font-bold bg-green-500 border-green-500 text-white">✓</div> 
-                <h1>{{ formatDate(application.dfinspect) }} - Inspection</h1>
+            <div v-if="application.dfapply && application.dfapply != '0000-00-00' && concerns[5] == application.concern" class="bg-orange-100 text-orange-800 rounded-md py-1.5 px-5 text-xs text-start flex items-center space-x-2">
+                <div class="z-10 flex items-center justify-center w-5 h-5 text-xl font-bold text-white">⚠️</div> 
+                <h1>Received - Incomplete Requirements<br> <small>{{ formatDate(application.dfapply) }}</small></h1>
             </div>
-            <div v-if="application.step >= 8" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-sm text-start flex items-center space-x-2">
+            <div v-if="application.dfinspect && application.dfinspect != '0000-00-00' && concerns[6] != application.concern" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-xs text-start flex items-center space-x-2">
                 <div class="z-10 flex items-center justify-center w-5 h-5 border-2 rounded-full text-xs font-bold bg-green-500 border-green-500 text-white">✓</div> 
-                <h1>{{ formatDate(application.dfsmemo) }} - Service Memorandum</h1>
+                <h1>Inspected {{ balance > 0 ? '- Ready for Payment' : '' }} <br> <small>{{ formatDate(application.dfinspect) }}</small></h1>
             </div>
-            <div v-if="application.step >= 9" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-sm text-start flex items-center space-x-2">
+            <div v-if="application.dfinspect && application.dfinspect != '0000-00-00' && concerns[6] != application.concern && balance == 0 && application.fees && application.fees.length > 0" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-xs text-start flex items-center space-x-2">
                 <div class="z-10 flex items-center justify-center w-5 h-5 border-2 rounded-full text-xs font-bold bg-green-500 border-green-500 text-white">✓</div> 
-                <h1>{{ formatDate(application.dfmct) }} - Material Charge Ticket</h1>
+                <h1>Payment Received {{ application.dfsmemo == '0000-00-00' ? '- For Schedule' : '' }}  <br> <small>{{ formatDate(application.fees[0].dfpaid) }}</small></h1>
             </div>
-            <div v-if="application.step >= 10" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-sm text-start flex items-center space-x-2">
+            <div v-if="application.dfinspect && application.dfinspect != '0000-00-00' && concerns[6] == application.concern" class="bg-orange-100 text-orange-800 rounded-md py-1.5 px-5 text-xs text-start flex items-center space-x-2">
+                <div class="z-10 flex items-center justify-center w-5 h-5 text-xl font-bold text-white">⚠️</div> 
+                <h1>Inspected - With Pending Concerns<br> <small>{{ formatDate(application.dfinspect) }}</small></h1>
+            </div>
+            
+            <div v-if="application.step >= 8" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-xs text-start flex items-center space-x-2">
                 <div class="z-10 flex items-center justify-center w-5 h-5 border-2 rounded-full text-xs font-bold bg-green-500 border-green-500 text-white">✓</div> 
-                <h1>{{ formatDate(application.dfconnect) }} - Connection</h1>
+                <h1>Scheduled {{ application.dfmct == '0000-00-00' ? '- For issuance of materials' : '' }} <br> <small>{{ formatDate(application.dfsmemo) }}</small></h1>
+            </div>
+            <div v-if="application.step >= 9" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-xs text-start flex items-center space-x-2">
+                <div class="z-10 flex items-center justify-center w-5 h-5 border-2 rounded-full text-xs font-bold bg-green-500 border-green-500 text-white">✓</div> 
+                <h1>For Tapping <br><small>{{ formatDate(application.dfmct) }}</small></h1>
+            </div>
+            <div v-if="application.step >= 10" class="bg-green-100 text-green-800 rounded-md py-1.5 px-5 text-xs text-start flex items-center space-x-2">
+                <div class="z-10 flex items-center justify-center w-5 h-5 border-2 rounded-full text-xs font-bold bg-green-500 border-green-500 text-white">✓</div> 
+                <h1>Connected <br><small>{{ formatDate(application.dfconnect) }}</small></h1>
             </div>
           </div>
-          <div class="text-sm bg-orange-100 rounded-md text-orange-800 text-start py-1.5 px-5 flex items-center space-x-2 max-w-4xl mx-auto" v-if="application.submitted_at && application.remarks">
-            <div class="z-10 flex items-center justify-center w-6 h-5 border-2 rounded-full text-xs font-bold bg-orange-500 border-orange-500 text-white">&#8505;</div> 
+          <div class="text-sm bg-white rounded-md text-orange-800 text-start py-1.5 px-5 flex items-center space-x-2 max-w-4xl mx-auto" v-if="application.submitted_at && application.remarks">
+            <div class="z-10 flex items-center justify-center w-6 h-5 text-lg font-bold text-white">📝</div> 
             <span>Remarks: {{ application.remarks }}</span>
           </div>
           <!-- Step 1 -->
@@ -189,7 +226,7 @@
                       </div>
                     </div> -->
                    
-                    <div v-if="application.service_type && application.service_type.cfnewconnect == 'NO'" class="relative space-y-1">
+                    <div v-if="application.service_type && application.service_type?.cfnewconnect == 'NO'" class="relative space-y-1">
                       <label 
                         for="can" 
                         :class="[
@@ -705,8 +742,7 @@
                         @click="next()" v-if="application.step < 4">Next</button>
                 <button class="btn btn-primary mx-1 w-full md:w-auto" 
                         @click="submitApplication()" 
-                        v-if="application.step == 4 && !application.submitted_at" 
-                        :disabled="!application.is_agree_term">Submit</button>
+                        v-if="application.step == 4 && !application.submitted_at">Submit</button>
                 <button class="btn btn-warning mx-1 w-full md:w-auto" 
                         v-if="application.step == 4 && application.submitted_at" 
                         @click="updateApplication()">Update</button>
@@ -774,10 +810,21 @@ import { mapState } from 'vuex';
           { cfdescript: "NEW CONNECTION", cfnewconnect: "YES", idservice1: 1 },
           { cfdescript: "RELOCATION", cfnewconnect: "NO", idservice1: 8 },
           { cfdescript: "EXTENSION / ADDITIONAL CONNECTION", cfnewconnect: "NO", idservice1: 6 },
-        ]
+        ],
+        concerns:{
+          5: "INCOMPLETE_REQUIREMENTS",
+          6: "INSPECTED_WITH_PENDING_CONCERN",
+          7: "NO_PAYMENT",
+
+        }
       };
     },
     computed: {
+      ...mapState({
+        electricians: state => state.electricians,
+        electricians1: state => state.electricians,
+        // application: state => state.application,
+      }),
       stepProgress() {
         return `${(this.application.step - 1) / 3 * 100}%`;
       },
@@ -788,7 +835,7 @@ import { mapState } from 'vuex';
         // return this.application.same_address ? this.applicant_address : this.application.service_zone + ', ' + this.application.service_barangay.cfdescript.toUpperCase() + ", " + this.application.service_municipality.name.toUpperCase()
       },
       visibleSteps() {
-        const allSteps = [
+        var allSteps = [
           "Fill up",
           "Electrician",
           "Schedule",
@@ -799,19 +846,25 @@ import { mapState } from 'vuex';
           "M.C.T.",
           "Connected"
         ];
-
         // Hide the last 5 steps if not submitted
         if (!this.application?.submitted_at) {
-          return allSteps.slice(0, 4); // Up to "Submit"
+          allSteps = allSteps.slice(0, 4); // Up to "Submit"
         }
 
+        if (this.application.service_type?.cfnewconnect == "NO") {
+          allSteps = allSteps.filter(step => step != "Schedule");
+        }
         return allSteps;
       },
-      ...mapState({
-        electricians: state => state.electricians,
-        electricians1: state => state.electricians,
-      }),
-      
+      totalFees(){
+          return this.application?.fees?.reduce((sum, fee) => sum + Number(fee.nfamount), 0);
+      },
+      totalPayment() {
+        return this.application?.fees?.filter(fee => fee.dfpaid && fee.dfpaid !== "0000-00-00").reduce((sum, fee) => sum + Number(fee.nfamount), 0);
+      },
+      balance(){
+          return this.totalFees - this.totalPayment;
+      }
     },
     watch: {
       application: {
@@ -895,6 +948,11 @@ import { mapState } from 'vuex';
       'application.step'(newVal) {
         this.scrollToActiveStep()
       },
+      // 'application.service_type': function (newVal){
+      //   if (newVal.cfnewconnect == "NO") {
+      //     this.visibleSteps = this.visibleSteps.filter(step => step != "Schedule");
+      //   }
+      // }
       // 'application.no_electrician' :function (newVal) {
       //     // this.application.electrician = null
       //     // this.application.electrician_id = null
@@ -1000,40 +1058,63 @@ import { mapState } from 'vuex';
 
         return true;
       },
-      next(){
-        if(this.application.step === 1) {
+      next() {
+        // Step 1 validation
+        if (this.application.step === 1) {
           if (!this.validateApplication()) return;
-        } else if (this.application.step === 2) {
-          const { electrician_id, no_electrician, electrician, service_cfareacode } = this.application;
+        } 
+        // Step 2 validation
+        else if (this.application.step === 2) {
+          const { electrician_id, no_electrician, electrician, service_cfareacode, service_type } = this.application;
 
           const isNoElectricianSelected = electrician_id == null && no_electrician == 0;
           const isElectricianFromOtherArea = electrician && electrician.cfareacode !== service_cfareacode;
-          // console.log(isNoElectricianSelected)
-          // console.log(isElectricianFromOtherArea)
+
           if (isNoElectricianSelected || isElectricianFromOtherArea) {
             alert("Please select an electrician in your area.");
             return;
           }
-        }else if(this.application.step == 3){
-          if(!this.application.selectedDate){
+
+          // Skip Step 3 if service_type.cfnewconnect is NO
+          if (service_type?.cfnewconnect === "NO") {
+            this.application.step += 1; // increment to Step 3
+            return this.next(); // recursively continue to Step 4
+          }
+        } 
+        // Step 3 validation (Schedule)
+        else if (this.application.step === 3) {
+          if (this.application.service_type?.cfnewconnect === "YES" && !this.application.selectedDate) {
             alert("Please select a Date");
             return;
           }
         }
-        if(this.application.step < 5) {
+
+        // Increment step normally
+        if (this.application.step < 5) {
           this.application.step += 1;
         }
       },
       back(){
         if(this.application.step > 1){
-          this.application.step -= 1;
+          if(this.application.step == 4){
+            if (this.application.service_type?.cfnewconnect == "NO") {
+              this.application.step -= 2;
+            }else{
+              this.application.step -= 1;
+            }
+          }else{
+            this.application.step -= 1;
+          }
         }else{
           this.$router.push({ name: "Home"});
         }
       },
       async submitApplication(){
         var self = this
-        if(!self.application.is_agree_term){return;}
+        if(!self.application.is_agree_term){
+          self.errorMessage = "To proceed, please check the box to agree."
+          return;
+        }
         self.errorMessage = ''
         self.$store.commit("setLoading", true);
         await axios.post(`${import.meta.env.VITE_CIMS_API_URL}/api/consumer-services/online-application/insert`, {form_data: JSON.stringify(self.application) })
