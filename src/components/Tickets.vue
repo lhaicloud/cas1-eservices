@@ -397,7 +397,9 @@
             getDeviceId() {
                 let deviceId = localStorage.getItem("device_id");
                 if (!deviceId) {
-                    deviceId = crypto.randomUUID(); // Generate a new ID
+                    const timestamp = Date.now();
+                    const randomPart = Math.floor(Math.random() * 1e6);
+                    deviceId = `${timestamp}${randomPart}`.slice(0, 16);
                     localStorage.setItem("device_id", deviceId);
                 }
                 return deviceId;
