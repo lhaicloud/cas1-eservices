@@ -268,10 +268,10 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                                 v-for="interruption in matchedPowerInterruptions.slice(0, 2)"
                                                 :key="interruption.id"
                                                 type="button"
-                                                class="block w-full px-2.5 py-2.5 text-left transition-colors hover:bg-amber-50/80 focus:bg-amber-50/80 focus:outline-none sm:px-3"
+                                                class="group flex w-full cursor-pointer items-start gap-2 px-2.5 py-2.5 text-left transition-colors hover:bg-amber-100 focus:bg-amber-100 focus:outline-none sm:px-3"
                                                 @click="openConsumerMapForInterruption(interruption)"
                                             >
-                                                <div class="flex flex-col gap-1.5">
+                                                <div class="flex-1 flex flex-col gap-1.5">
                                                     <div class="min-w-0">
                                                         <div class="text-[11px] font-semibold leading-5 text-slate-900 break-words sm:text-[13px] sm:leading-6">
                                                             {{ interruption.title || 'Power Interruption' }}
@@ -292,6 +292,9 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                                         {{ formatInterruptionSchedule(interruption) }}
                                                     </div>
                                                 </div>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mt-1 shrink-0 text-amber-400 transition-transform group-hover:translate-x-0.5 group-hover:text-amber-600">
+                                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                                </svg>
                                             </button>
                                         </div>
                                         <div v-if="matchedPowerInterruptions.length > 2" class="mt-2 text-[11px] text-amber-800">
@@ -1482,7 +1485,8 @@ import CryptoJS from 'crypto-js';
                 const interruptions = await this.loadPublicPowerInterruptions();
                 this.matchedPowerInterruptions = interruptions
                     .filter(interruption =>
-                        this.interruptionMatchesArea(interruption, normalizedMunicipality, areaCode)
+                        this.interruptionMatchesArea(interruption, normalizedMunicipality, areaCode) &&
+                        this.isInterruptionActiveNow(interruption)
                     )
                     .sort((left, right) => {
                         const leftActive = this.isInterruptionActiveNow(left) ? 1 : 0;

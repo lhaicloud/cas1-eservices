@@ -32,8 +32,23 @@
             <span>{{ tickets.length }} ticket{{ tickets.length === 1 ? '' : 's' }}</span>
           </div>
           <div class="consumer-public-chip">
-            <span>{{ powerInterruptions.length }} interruption{{ powerInterruptions.length === 1 ? '' : 's' }}</span>
+            <span>{{ filteredPowerInterruptions.length }} interruption{{ filteredPowerInterruptions.length === 1 ? '' : 's' }}</span>
           </div>
+        </div>
+
+        <div class="mt-2 flex gap-1">
+          <button
+            type="button"
+            class="consumer-public-filter-tab"
+            :class="interruptionFilter === 'today' ? 'consumer-public-filter-tab--active' : ''"
+            @click="interruptionFilter = 'today'"
+          >Today</button>
+          <button
+            type="button"
+            class="consumer-public-filter-tab"
+            :class="interruptionFilter === 'upcoming' ? 'consumer-public-filter-tab--active' : ''"
+            @click="interruptionFilter = 'upcoming'"
+          >Upcoming</button>
         </div>
 
         <div class="mt-3 flex items-center gap-2">
@@ -133,6 +148,7 @@ export default {
       legendExpanded: true,
       date1: new Date().toISOString().split('T')[0],
       date2: new Date().toISOString().split('T')[0],
+      interruptionFilter: 'today',
     };
   },
   computed: {
@@ -143,6 +159,30 @@ export default {
     routeInterruptionId() {
       const interruptionId = this.$route.query.interruption;
       return interruptionId != null && interruptionId !== '' ? String(interruptionId) : null;
+    },
+    filteredPowerInterruptions() {
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+
+      return this.powerInterruptions.filter((interruption) => {
+        const startAt = interruption.start_at ? new Date(interruption.start_at) : null;
+        const endAt = interruption.end_at ? new Date(interruption.end_at) : null;
+
+        if (this.interruptionFilter === 'today') {
+          if (!startAt) return true;
+          return startAt <= todayEnd && (!endAt || endAt >= todayStart);
+        }
+
+        if (!startAt) return false;
+        return startAt > todayEnd;
+      });
+    },
+  },
+  watch: {
+    interruptionFilter() {
+      this.renderPowerInterruptionOverlays();
     },
   },
   created() {
@@ -585,7 +625,7 @@ export default {
 
       let html = `
         <div class="consumer-public-popup">
-          <div class="consumer-public-popup-title">Ticket ${ticket.ticket_no.toString().padStart(7, '0')}</div>
+          <div class="consumer-public-popup-title">Ticket ${this.escapeHtml(ticket.ticket_no.toString().padStart(7, '0'))}</div>
           <div class="consumer-public-popup-meta">Created ${this.escapeHtml(createdAt)}</div>
           <div class="consumer-public-popup-row"><b>Status:</b> ${this.escapeHtml(this.getTicketStatusLabel(ticket.status))}</div>
           <div class="consumer-public-popup-row"><b>Area:</b> ${this.escapeHtml(this.getConsumerTicketArea(ticket))}</div>
@@ -645,13 +685,13 @@ export default {
       this.clearHoveredInterruption();
     },
     async buildPowerInterruptionGeoJson() {
-      if (!this.showPowerInterruptionOverlay || this.powerInterruptions.length === 0) {
+      if (!this.showPowerInterruptionOverlay || this.filteredPowerInterruptions.length === 0) {
         return this.emptyFeatureCollection();
       }
 
       const features = [];
 
-      for (const interruption of this.powerInterruptions) {
+      for (const interruption of this.filteredPowerInterruptions) {
         const geometries = await this.getPowerInterruptionGeometries(interruption);
         if (!geometries.length) {
           continue;
@@ -1206,6 +1246,23 @@ export default {
 ::v-deep .maplibregl-popup-close-button {
   font-size: 1.1rem;
   color: #4b6478;
+}
+
+.consumer-public-filter-tab {
+  padding: 0.22rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: rgba(236, 243, 248, 0.96);
+  border: 1px solid rgba(187, 203, 213, 0.95);
+  color: #24455f;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.consumer-public-filter-tab--active {
+  background: #0f5fa8;
+  border-color: #0f5fa8;
+  color: #ffffff;
 }
 
 @media (max-width: 767px) {
