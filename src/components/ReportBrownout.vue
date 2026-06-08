@@ -231,6 +231,86 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                     <li v-for="error in errors" v-if="error"><small>{{ error }}</small></li>
                                 </ul>
                             </div>
+                            <div
+                                v-if="matchedPowerInterruptions.length > 0"
+                                class="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 px-3 py-3 text-left text-amber-950 shadow-sm sm:px-4 sm:py-3.5"
+                            >
+                                <div class="flex items-start gap-2.5 sm:gap-3">
+                                    <div class="mt-0.5 shrink-0 text-amber-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                        </svg>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="min-w-0">
+                                            <div class="text-[10px] font-semibold tracking-[0.04em] text-amber-700 sm:text-[11px]">
+                                                Interruption advisory
+                                            </div>
+                                            <div class="mt-0.5 text-[12px] font-semibold leading-5 text-amber-950 sm:text-[14px] sm:leading-6">
+                                                {{ matchedPowerInterruptions.length === 1 ? 'There is a posted power interruption in your area.' : `There are ${matchedPowerInterruptions.length} posted power interruptions in your area.` }}
+                                            </div>
+                                            <div class="mt-1.5 flex flex-col gap-1 text-[10px] sm:flex-row sm:flex-wrap sm:items-center sm:gap-1.5 sm:text-[11px]">
+                                                <div class="font-medium uppercase tracking-[0.08em] text-amber-700">
+                                                    {{ interruptionNoticeLocationLabel }}
+                                                </div>
+                                                <span
+                                                    v-if="isSubmissionBlockedByInterruption"
+                                                    class="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-red-700"
+                                                >
+                                                    Submission blocked
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2.5 divide-y divide-amber-200/80 overflow-hidden rounded-lg border border-amber-200 bg-white/90">
+                                            <button
+                                                v-for="interruption in matchedPowerInterruptions.slice(0, 2)"
+                                                :key="interruption.id"
+                                                type="button"
+                                                class="block w-full px-2.5 py-2.5 text-left transition-colors hover:bg-amber-50/80 focus:bg-amber-50/80 focus:outline-none sm:px-3"
+                                                @click="openConsumerMapForInterruption(interruption)"
+                                            >
+                                                <div class="flex flex-col gap-1.5">
+                                                    <div class="min-w-0">
+                                                        <div class="text-[11px] font-semibold leading-5 text-slate-900 break-words sm:text-[13px] sm:leading-6">
+                                                            {{ interruption.title || 'Power Interruption' }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex flex-wrap gap-1.5">
+                                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+                                                            {{ formatInterruptionType(interruption.interruption_type) }}
+                                                        </span>
+                                                        <span
+                                                            v-if="isInterruptionActiveNow(interruption)"
+                                                            class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-red-700"
+                                                        >
+                                                            Active now
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-[11px] leading-5 text-slate-600">
+                                                        {{ formatInterruptionSchedule(interruption) }}
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                        <div v-if="matchedPowerInterruptions.length > 2" class="mt-2 text-[11px] text-amber-800">
+                                            Plus {{ matchedPowerInterruptions.length - 2 }} more posted interruption{{ matchedPowerInterruptions.length - 2 === 1 ? '' : 's' }}.
+                                        </div>
+                                        <div
+                                            v-if="isSubmissionBlockedByInterruption"
+                                            class="mt-2.5 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs leading-5 text-red-800"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                            </svg>
+                                            <span>Ticket submission is temporarily disabled while there is an active posted power interruption in your area.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="text-center" v-if="!isGrantedLocation && !fetching_location && locationType == 'current' && !isMessengerBrowser">
                                 <button class="btn btn-success " @click="getLocation()">Allow Location Access</button>
                             </div>
@@ -421,7 +501,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
 
                             </div>
                             <div class="text-center">
-                                <button class="btn btn-primary w-full lg:w-1/2 justify-center" @click="submitReport()" :disabled="isLoading || tickets && tickets.pending_ticket.length > 0">Submit</button>
+                                <button class="btn btn-primary w-full lg:w-1/2 justify-center" @click="submitReport()" :disabled="isLoading || tickets && tickets.pending_ticket.length > 0 || isSubmissionBlockedByInterruption">Submit</button>
                             </div>
                         </div>
                         
@@ -573,6 +653,12 @@ import CryptoJS from 'crypto-js';
                 TicketNo: '',
                 isFollowUp: (this.$route.query.account !== null ? false : true) ?? false,
                 followedTicket: null,
+                publicPowerInterruptions: [],
+                matchedPowerInterruptions: [],
+                isLoadingPowerInterruptions: false,
+                interruptionNoticeLocationLabel: '',
+                currentTimestamp: Date.now(),
+                clockTimer: null,
                 areaMap: {
                     '11': 'Libmanan',
                     '12': 'Cabusao',
@@ -630,6 +716,14 @@ import CryptoJS from 'crypto-js';
                 .filter(l => l.status_type === 'resolve')
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // newest first
                 return resolves.length ? resolves[0]._id : null;
+            },
+            activeBlockingInterruptions() {
+                return this.matchedPowerInterruptions.filter(interruption =>
+                    this.isInterruptionActiveNow(interruption)
+                );
+            },
+            isSubmissionBlockedByInterruption() {
+                return this.activeBlockingInterruptions.length > 0;
             }
         },
         created() {
@@ -675,7 +769,15 @@ import CryptoJS from 'crypto-js';
             // }else{
             //     this.getLocation();
             // }
-            
+            this.clockTimer = setInterval(() => {
+                this.currentTimestamp = Date.now();
+            }, 60000);
+        },
+        beforeDestroy() {
+            if (this.clockTimer) {
+                clearInterval(this.clockTimer);
+                this.clockTimer = null;
+            }
         },
         watch: {
             locationType(newval){
@@ -695,6 +797,8 @@ import CryptoJS from 'crypto-js';
                 this.errors.name = null
                 this.errors.mobile = null
                 this.errors.server = null
+                this.matchedPowerInterruptions = []
+                this.interruptionNoticeLocationLabel = ''
 
                 if(newval == 'current'){
                     if (navigator.userAgent.includes("FBAN") || navigator.userAgent.includes("FBAV")) {
@@ -804,7 +908,7 @@ import CryptoJS from 'crypto-js';
                         // this.getMyTicketRange()
 
                         // Call reverse geocoding function
-                        // await this.getAddress(lat, lng);
+                        await this.getAddress(lat, lng);
                         // console.log("Location fully loaded.");
                         this.fetching_location = false;
                     } catch (error) {
@@ -828,20 +932,25 @@ import CryptoJS from 'crypto-js';
                 }
             },
             getAddress(lat, lng) {
-                fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+                return fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
                     .then(response => response.json())
-                    .then(data => {
-                    console.log("Full Address:", data);
+                    .then(async data => {
+                    const barangay = data.address.suburb || data.address.village || data.address.hamlet || "";
+                    const municipality = data.address.city || data.address.town || data.address.municipality || "";
 
-                    const barangay = data.address.suburb || data.address.village || "Not Found";
-                    const municipality = data.address.city || data.address.town || "Not Found";
-                    const street = data.address.road || "Not Found";
+                    this.data.barangay = barangay || "";
+                    this.data.municipality = municipality || "";
 
-                    console.log("Barangay:", barangay);
-                    console.log("Municipality:", municipality);
-                    console.log("Street:", street);
+                    await this.checkPowerInterruptionsForArea({
+                        municipalityName: municipality,
+                        barangayName: barangay,
+                    });
                     })
-                    .catch(error => console.error("Error fetching address:", error));
+                    .catch(error => {
+                        console.error("Error fetching address:", error)
+                        this.matchedPowerInterruptions = []
+                        this.interruptionNoticeLocationLabel = ''
+                    });
             },
             handleLocationType() {
                 if (this.locationType === "current") {
@@ -853,6 +962,7 @@ import CryptoJS from 'crypto-js';
                 this.data.userLocation = [event.target.getLatLng().lat, event.target.getLatLng().lng];
                 this.userLocation2 = [event.target.getLatLng().lat, event.target.getLatLng().lng];
                 this.center = this.data.userLocation;
+                this.getAddress(event.target.getLatLng().lat, event.target.getLatLng().lng);
                 // this.getMyTicketRange()
                 // this.getAddress(event.target.getLatLng().lat, event.target.getLatLng().lng);
                 // this.$swal({
@@ -908,6 +1018,8 @@ import CryptoJS from 'crypto-js';
                     account: "",
                     accountValid: false,
                 }
+                this.matchedPowerInterruptions = []
+                this.interruptionNoticeLocationLabel = ''
                 
 
             },
@@ -917,6 +1029,10 @@ import CryptoJS from 'crypto-js';
                
                 if(self.tickets && self.tickets.pending_ticket.length > 0){
                     self.errors.server = "You have an active ticket."
+                    return;
+                }
+                if (self.isSubmissionBlockedByInterruption) {
+                    self.errors.server = "Ticket submission is temporarily disabled because there is an active posted power interruption in your area.";
                     return;
                 }
                 await Promise.all(Object.keys(this.data).map(field => this.validateField(field)));
@@ -1073,16 +1189,25 @@ import CryptoJS from 'crypto-js';
                         this.data.cfacctno = data.data.cfacctno;
                         this.data.bgy_id = data.data.bgy_id;
                         this.data.cfareacode = data.data.cfareacode;
+                        this.data.municipality =
+                            this.areaMap[String(data.data.cfareacode)] ||
+                            this.extractMunicipalityFromAddress(data.data.account_address);
                         
                         console.log(this.data.userLocation)
                         this.userLocation2 = [data.data.nflatitude, data.data.nflongitude];
                         this.center = [data.data.nflatitude, data.data.nflongitude];
+                        await this.checkPowerInterruptionsForArea({
+                            municipalityName: this.data.municipality,
+                            areaCode: data.data.cfareacode,
+                        });
                         
                     }else{
                         this.data.userLocation = [0,0];
                         this.data.name = null;
                         this.data.address = null;
                         this.errors.account = "Invalid Account Number"
+                        this.matchedPowerInterruptions = []
+                        this.interruptionNoticeLocationLabel = ''
                     }
 
                     this.isLoading = false
@@ -1250,6 +1375,176 @@ import CryptoJS from 'crypto-js';
                 this.locationType = null
                 this.isSummary = false
                 this.isFollowUp = false
+            },
+            async loadPublicPowerInterruptions() {
+                if (this.publicPowerInterruptions.length || this.isLoadingPowerInterruptions) {
+                    return this.publicPowerInterruptions;
+                }
+
+                const base = (import.meta.env.VITE_POWER_INTERRUPTION_API_URL || 'http://172.16.80.80:81').replace(/\/$/, '');
+                if (!base) {
+                    return [];
+                }
+
+                this.isLoadingPowerInterruptions = true;
+
+                try {
+                    const response = await axios.get(`${base}/api/power-interruptions/consumer-map`, {
+                        params: {
+                            area_office_id: 'all',
+                        }
+                    });
+                    this.publicPowerInterruptions = response.data || [];
+                } catch (error) {
+                    console.error('Error fetching public power interruptions:', error);
+                    this.publicPowerInterruptions = [];
+                } finally {
+                    this.isLoadingPowerInterruptions = false;
+                }
+
+                return this.publicPowerInterruptions;
+            },
+            normalizeMunicipalityName(value) {
+                return (value || '')
+                    .toString()
+                    .toUpperCase()
+                    .replace(/\bCITY\b/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            },
+            extractMunicipalityFromAddress(address) {
+                const parts = (address || '')
+                    .toString()
+                    .split(',')
+                    .map(part => this.normalizeMunicipalityName(part))
+                    .filter(Boolean);
+
+                return parts.length ? parts[parts.length - 1] : '';
+            },
+            parseInterruptionDate(value) {
+                if (!value) {
+                    return null;
+                }
+
+                const parsed = new Date(value);
+                return Number.isNaN(parsed.getTime()) ? null : parsed;
+            },
+            isInterruptionActiveNow(interruption) {
+                const startAt = this.parseInterruptionDate(interruption.start_at);
+                if (!startAt) {
+                    return false;
+                }
+
+                const endAt = this.parseInterruptionDate(interruption.end_at);
+                const now = new Date(this.currentTimestamp);
+
+                if (endAt) {
+                    return now >= startAt && now <= endAt;
+                }
+
+                return now >= startAt;
+            },
+            interruptionMatchesArea(interruption, municipalityName, areaCode) {
+                const scope = (interruption.area_scope || '').toLowerCase();
+                if (scope === 'coverage') {
+                    return true;
+                }
+
+                const interruptionAreaCode = interruption.area_office_id != null ? String(interruption.area_office_id) : '';
+                if (areaCode && interruptionAreaCode && String(areaCode) === interruptionAreaCode) {
+                    return true;
+                }
+
+                const normalizedTarget = this.normalizeMunicipalityName(municipalityName);
+                if (!normalizedTarget) {
+                    return false;
+                }
+
+                const haystacks = [
+                    interruption.municipality_names,
+                    interruption.municipality,
+                    interruption.affected_area,
+                    interruption.affected_barangays,
+                ]
+                    .filter(Boolean)
+                    .map(value => this.normalizeMunicipalityName(value));
+
+                return haystacks.some(value => value.includes(normalizedTarget));
+            },
+            async checkPowerInterruptionsForArea({ municipalityName = '', barangayName = '', areaCode = '' } = {}) {
+                const normalizedMunicipality = this.normalizeMunicipalityName(municipalityName);
+                if (!normalizedMunicipality && !areaCode) {
+                    this.matchedPowerInterruptions = [];
+                    this.interruptionNoticeLocationLabel = '';
+                    return;
+                }
+
+                const interruptions = await this.loadPublicPowerInterruptions();
+                this.matchedPowerInterruptions = interruptions
+                    .filter(interruption =>
+                        this.interruptionMatchesArea(interruption, normalizedMunicipality, areaCode)
+                    )
+                    .sort((left, right) => {
+                        const leftActive = this.isInterruptionActiveNow(left) ? 1 : 0;
+                        const rightActive = this.isInterruptionActiveNow(right) ? 1 : 0;
+
+                        if (leftActive !== rightActive) {
+                            return rightActive - leftActive;
+                        }
+
+                        const leftStart = this.parseInterruptionDate(left.start_at);
+                        const rightStart = this.parseInterruptionDate(right.start_at);
+                        const leftTime = leftStart ? leftStart.getTime() : Number.MAX_SAFE_INTEGER;
+                        const rightTime = rightStart ? rightStart.getTime() : Number.MAX_SAFE_INTEGER;
+
+                        return leftTime - rightTime;
+                    });
+
+                const parts = [];
+                if (barangayName) {
+                    parts.push(barangayName.toString().toUpperCase());
+                }
+                if (municipalityName) {
+                    parts.push(this.normalizeMunicipalityName(municipalityName));
+                } else if (areaCode && this.areaMap[String(areaCode)]) {
+                    parts.push(this.areaMap[String(areaCode)].toUpperCase());
+                }
+                this.interruptionNoticeLocationLabel = parts.length
+                    ? `Detected area: ${parts.join(', ')}`
+                    : 'Detected area matches a posted interruption.';
+            },
+            formatInterruptionType(type) {
+                return (type || 'scheduled').toString().toUpperCase();
+            },
+            formatInterruptionSchedule(interruption) {
+                const format = (value) => {
+                    if (!value) return '';
+                    const date = new Date(value);
+                    if (Number.isNaN(date.getTime())) return value;
+                    return date.toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                    });
+                };
+
+                const start = format(interruption.start_at);
+                const end = format(interruption.end_at);
+                return end ? `${start} to ${end}` : start;
+            },
+            openConsumerMapForInterruption(interruption) {
+                if (!interruption || !interruption.id) {
+                    return;
+                }
+
+                this.$router.push({
+                    name: 'PowerOutageMap',
+                    query: {
+                        interruption: String(interruption.id),
+                    },
+                });
             }
 
             

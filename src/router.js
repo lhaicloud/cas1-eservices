@@ -53,6 +53,11 @@ const routes = [
     component: () => import("./components/ViewExistingApplicationDetails.vue")
   },
   {
+    path: "/power-outage-map",
+    name: "PowerOutageMap",
+    component: () => import("./components/PowerOutageMap.vue")
+  },
+  {
     path: "/capture",
     name: "CaptureImage",
     component: () => import("./components/CaptureImage.vue")

@@ -10,34 +10,49 @@
       <!-- Header -->
       <h2 class="text-xl font-semibold mb-4">Find Account</h2>
       
-      <div class="relative space-y-1">
-        <input
-          type="text"
-          id="can"
-          v-model="searchKey"
-          @keyup.enter="findAccount"
-          ref="can"
-          placeholder=" "
-          autocomplete="off"
-          required
-          :class="[
-            'peer block w-full border rounded-md px-3 pt-3 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-          ]"
-        />
-        <label
-          for="can"
-          :class="[
-            'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
-            searchKey ? '-top-3 text-xs text-blue-500 bg-white' : 'top-1.5 text-sm bg-transparent'
-          ]"
-          class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+      <div class="flex items-center gap-3">
+        <div class="relative space-y-1 flex-1">
+          <input
+            type="text"
+            id="can"
+            v-model="searchKey"
+            @keyup.enter="findAccount"
+            ref="can"
+            placeholder=" "
+            autocomplete="off"
+            required
+            :class="[
+              'peer block w-full border rounded-md px-3 pt-3 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+            ]"
+          />
+          <label
+            for="can"
+            :class="[
+              'absolute left-3 px-1 transition-all duration-200 ease-in-out text-gray-500',
+              searchKey ? '-top-3 text-xs text-blue-500 bg-white' : 'top-1.5 text-sm bg-transparent'
+            ]"
+            class="peer-focus:-top-3 peer-focus:text-xs peer-focus:text-blue-500 peer-focus:bg-white"
+          >
+            Account Number/Name
+          </label>
+        </div>
+        <button
+          type="button"
+          @click="findAccount"
+          class="btn-primary text-white rounded p-2 flex items-center justify-center transition-colors"
         >
-          Account Number/Name
-        </label>
+          <svg xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 mr-1 text-gray-800"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z" />
+          </svg>
+        </button>
+
+
       </div>
-      <button type="button" class="btn btn-primary my-3" @click="findAccount">
-        Find
-      </button>
 
       <h1 class="text-xs text-left mt-5">Results: {{ results.length }}</h1>
       <h2 class="text-xs text-left mt-2 mb-2 text-gray-500">Please select your account</h2>
@@ -49,13 +64,17 @@
               <th class="px-2 py-2 border">C.A.N.</th>
               <th class="px-2 py-2 border">Name</th>
               <th class="px-2 py-2 border">Address</th>
+              <th class="px-2 py-2 border"></th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="result in results" :key="result.id" @click="selectAccount(result)">
+            <tr v-for="result in results" :key="result.id">
               <td class="px-2 py-2 border text-nowrap">{{ result.cfrotcode }}-{{ result.cfacctno }}</td>
               <td class="px-2 py-2 border text-nowrap">{{ result.cflastname }}, {{ result.cffirstnam }} {{ result.cfmidname }}</td>
               <td class="px-2 py-2 border text-nowrap">{{ result.cfaddress }}</td>
+              <td class="px-2 py-2 border">
+                <button class="btn-primary px-2 py-1 rounded w-full" @click="selectAccount(result)">Select</button>
+              </td>
             </tr>
           </tbody>
         </table>
