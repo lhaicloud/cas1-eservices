@@ -172,7 +172,8 @@ export default {
 
         if (this.interruptionFilter === 'today') {
           if (!startAt) return true;
-          return startAt <= todayEnd && (!endAt || endAt >= todayStart);
+          if (startAt >= todayStart && startAt <= todayEnd) return true;
+          return startAt < todayStart && !!endAt && endAt >= todayStart;
         }
 
         if (!startAt) return false;
