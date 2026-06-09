@@ -1245,8 +1245,26 @@ export default {
 }
 
 ::v-deep .maplibregl-popup-close-button {
+  width: 1.6rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 0.5rem;
+  right: 0.5rem;
+  border-radius: 999px;
   font-size: 1.1rem;
+  line-height: 1;
   color: #4b6478;
+  background: rgba(236, 243, 248, 0.9);
+  border: 1px solid rgba(187, 203, 213, 0.8);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+::v-deep .maplibregl-popup-close-button:hover {
+  background: rgba(215, 228, 237, 1);
+  color: #1f3e57;
 }
 
 .consumer-public-filter-tab {
