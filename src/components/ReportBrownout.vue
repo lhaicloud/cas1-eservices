@@ -8,6 +8,9 @@
 Please open this link in your device’s main browser (like Chrome or Safari), as Facebook Messenger’s built-in browser may not allow location access.</h1>
         </div> -->
         <SpinnerOverlay v-if="isLoading"/>
+        <div v-if="tokenError" class="fixed top-0 left-0 w-full bg-red-600 text-white text-center p-3 text-sm z-50">
+            {{ tokenError }}
+        </div>
         <div class="w-full md:w-1/2 xl:w-2/5 grid grid-cols-1 m-3 space-y-2 pb-10">
             
             <!-- <div v-if="!tickets" class="border border-gray-300 rounded-lg bg-white p-5"> -->
@@ -651,6 +654,7 @@ import CryptoJS from 'crypto-js';
                 }),
                 isMessengerBrowser: false,
                 messengerID: null,
+                tokenError: null,
                 debouncedValidateField: null,
                 isGrantedLocation: false,
                 TicketNo: '',
@@ -729,12 +733,23 @@ import CryptoJS from 'crypto-js';
                 return this.activeBlockingInterruptions.length > 0;
             }
         },
-        created() {
-            if(this.$route.query.token){
-                const params = new URLSearchParams(window.location.search);
-                const token = params.get('token'); // token is decoded properly now
-                this.messengerID = this.decryptAES(token, import.meta.env.VITE_AES_KEY);
-                localStorage.setItem("device_id", this.messengerID);
+        async created() {
+            if(this.$route.query.t){
+                const t = this.$route.query.t;
+                try {
+                    const res = await fetch(
+                        `${import.meta.env.VITE_POWER_INTERRUPTION_API_URL}/api/brownout/resolve-token?t=${encodeURIComponent(t)}`
+                    );
+                    if (res.ok) {
+                        const data = await res.json();
+                        this.messengerID = data.messenger_id;
+                        localStorage.setItem("device_id", this.messengerID);
+                    } else {
+                        this.tokenError = 'Invalid link. Please request a new one from the chatbot.';
+                    }
+                } catch {
+                    this.tokenError = 'Could not validate link. Please try again.';
+                }
             }
 
             this.debouncedValidateField = debounce(this.validateAccountNumber, 500); // 300ms delay
