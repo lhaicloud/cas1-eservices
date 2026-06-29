@@ -160,6 +160,10 @@ export default {
       const interruptionId = this.$route.query.interruption;
       return interruptionId != null && interruptionId !== '' ? String(interruptionId) : null;
     },
+    routeTicketNo() {
+      const t = this.$route.query.ticket;
+      return t != null && t !== '' ? String(t) : null;
+    },
     filteredPowerInterruptions() {
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
@@ -248,6 +252,7 @@ export default {
         this.renderPowerInterruptionOverlays();
         this.setPowerInterruptionLayerVisibility();
         this.applyRouteInterruptionFocus();
+        this.applyRouteTicketFocus();
       });
     },
     emptyFeatureCollection() {
@@ -499,6 +504,7 @@ export default {
         const data = await response.json();
         this.tickets = data.all_ticket || [];
         this.renderTicketMarkers();
+        this.applyRouteTicketFocus();
       } catch (error) {
         console.error('Error fetching consumer tickets:', error);
         this.tickets = [];
@@ -863,6 +869,25 @@ export default {
       }
 
       this.focusInterruptionById(this.routeInterruptionId);
+    },
+    applyRouteTicketFocus() {
+      if (!this.routeTicketNo || !this.mapLoaded || !this.map) {
+        return;
+      }
+
+      const ticket = this.tickets.find((t) => String(t.ticket_no) === this.routeTicketNo);
+      if (!ticket || !ticket.location || !ticket.location.coordinates) {
+        return;
+      }
+
+      const [lng, lat] = ticket.location.coordinates;
+
+      this.map.easeTo({ center: [lng, lat], zoom: 17, duration: 700 });
+
+      this.openTicketPopup({
+        geometry: { coordinates: [lng, lat] },
+        properties: { popup_html: this.generateTicketPopup(ticket) },
+      });
     },
     focusInterruptionById(interruptionId) {
       if (!interruptionId || !this.mapLoaded || !this.map || !this.powerInterruptionGeoJson || !this.powerInterruptionGeoJson.features) {
