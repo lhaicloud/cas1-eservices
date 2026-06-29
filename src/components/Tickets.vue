@@ -2,9 +2,6 @@
     <div class="text-xs lg:text-base justify-center flex">
         
         <div class="w-full md:w-2/3 xl:w-2/5 pb-10">
-            <div class="flex items-center gap-3 px-3 py-2 text-base">
-                <router-link :to="{ name: 'ReportBrownout'}" class="text-white">< Back</router-link>
-            </div>
             <ul class="flex items-center px-3 gap-3 py-3 ">
                 <li class="border-b-2 text-center flex-1 py-2 cursor-pointer" :class="activeTab == 1 ? 'border-b-2 border-white text-white font-extrabold ' : 'border-gray-300 hover:border-gray-300 text-gray-300'" @click="activeTab=1">Active Ticket</li>
                 <li class="border-b-2 text-center flex-1 py-2 cursor-pointer" :class="activeTab == 2 ? 'border-b-2 border-white text-white font-extrabold' : 'border-gray-300 hover:border-gray-300 text-gray-300'" @click="activeTab=2">Ticket History</li>

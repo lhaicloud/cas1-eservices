@@ -569,7 +569,10 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                         Note: <br/>
                         Kindly keep your ticket number for follow-up or status inquiries.
                     </p>
-                    <button class="text-gray-800 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 py-1 px-2 text-sm rounded-md" @click="gobackhome()">Back to home</button>
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="text-gray-800 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 py-1 px-2 text-sm rounded-md" @click="gobackhome()">Back to home</button>
+                        <button class="text-blue-700 bg-blue-100 hover:bg-blue-200 active:bg-blue-300 py-1 px-2 text-sm rounded-md" @click="$router.push({ name: 'PowerOutageMap' })">View Power Outage Map</button>
+                    </div>
                 </div>
             </div>
                 
