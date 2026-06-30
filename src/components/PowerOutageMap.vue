@@ -931,36 +931,11 @@ export default {
         return;
       }
 
-      const bounds = new maplibregl.LngLatBounds();
-      let hasBounds = false;
-
-      this.tickets.forEach((ticket) => {
-        if (!ticket.location || !ticket.location.coordinates) {
-          return;
-        }
-
-        bounds.extend([ticket.location.coordinates[0], ticket.location.coordinates[1]]);
-        hasBounds = true;
+      this.map.easeTo({
+        center: DEFAULT_CENTER,
+        zoom: DEFAULT_ZOOM,
+        duration: 600,
       });
-
-      if (this.showPowerInterruptionOverlay && this.powerInterruptionGeoJson && this.powerInterruptionGeoJson.features.length > 0) {
-        this.powerInterruptionGeoJson.features.forEach((feature) => {
-          hasBounds = this.extendBoundsWithGeometry(bounds, feature.geometry) || hasBounds;
-        });
-      }
-
-      if (hasBounds) {
-        this.map.fitBounds(bounds, {
-          padding: 40,
-          duration: 700,
-        });
-      } else {
-        this.map.easeTo({
-          center: DEFAULT_CENTER,
-          zoom: DEFAULT_ZOOM,
-          duration: 600,
-        });
-      }
     },
     extendBoundsWithGeometry(bounds, geometry) {
       if (!geometry || !geometry.coordinates) {
