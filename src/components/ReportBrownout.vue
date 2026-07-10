@@ -320,6 +320,9 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                             <div class="text-center" v-if="!isGrantedLocation && !fetching_location && locationType == 'current' && !isMessengerBrowser">
                                 <button class="btn btn-success " @click="getLocation()">Allow Location Access</button>
                             </div>
+                            <div class="text-center" v-if="locationType == 'account' && data.accountLocationMissing && !data.userLocation && !fetching_location && !isMessengerBrowser">
+                                <button class="btn btn-success " @click="useCurrentLocationForAccount()">Use Current Location</button>
+                            </div>
                             <!-- <div v-if="!data.userLocation && !fetching_location" class="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm text-center"><small>No Location Data</small></div> -->
                             <div v-if="fetching_location && !data.userLocation" class="text-center my-3 font-bold text-md">Please wait, Fetching Location...</div>
                             <div v-if="!fetching_location && data.userLocation">
@@ -618,6 +621,7 @@ import CryptoJS from 'crypto-js';
                     account: this.$route.query.account ?? "",
                     address: "",
                     accountValid : false,
+                    accountLocationMissing: false,
                     cfcodeno: null,
                     cfrotcode: null,
                     cfacctno: null,
@@ -810,6 +814,7 @@ import CryptoJS from 'crypto-js';
                 this.data.address = ""
                 this.data.userLocation = ""
                 this.data.accountValid = false
+                this.data.accountLocationMissing = false
 
                 this.errors.municipality = null
                 this.errors.barangay = null
@@ -818,6 +823,7 @@ import CryptoJS from 'crypto-js';
                 this.errors.name = null
                 this.errors.mobile = null
                 this.errors.server = null
+                this.errors.userLocation = null
                 this.matchedPowerInterruptions = []
                 this.interruptionNoticeLocationLabel = ''
 
@@ -878,68 +884,83 @@ import CryptoJS from 'crypto-js';
                     return null;
                 }
             },
-            async getLocation() {
-                if ("geolocation" in navigator) {
-                    try {
-                        
-                        
-                        // console.log("Fetching location...");
-                        this.errors.server = ""
-                        
-                        this.fetching_location = true;
-
-                        const position = await new Promise((resolve, reject) => {
-                                navigator.geolocation.getCurrentPosition(
-                                    (pos) => {
-                                        this.fetching_location = false;
-                                        resolve(pos); // ✅ Resolve on success
-                                    },
-                                    (error) => {
-                                        switch (error.code) {
-                                            case error.PERMISSION_DENIED:
-                                                this.errors.server = "Permission denied. Please allow location access.";
-                                                break;
-                                            case error.POSITION_UNAVAILABLE:
-                                                this.errors.server = "Location information is unavailable.";
-                                                break;
-                                            case error.TIMEOUT:
-                                                this.errors.server = "Location request timed out.";
-                                                break;
-                                            default:
-                                                this.errors.server = "An unknown error occurred.";
-                                        }
-                                        this.fetching_location = false;
-                                        reject(error); // ✅ Reject on error
-                                    },
-                                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                                );
-                            });
-
-                        
-                        
-
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                  
-                        this.data.userLocation = [lat, lng];
-                        this.userLocation2 = [lat, lng];
-                        this.center = [lat, lng];
-
-                        // console.log("Latitude:", lat, "Longitude:", lng);
-                        // this.getMyTicketRange()
-
-                        // Call reverse geocoding function
-                        await this.getAddress(lat, lng);
-                        // console.log("Location fully loaded.");
-                        this.fetching_location = false;
-                    } catch (error) {
-                        console.error("Error getting location:", error.message);
-                        this.errors.server = "Location access denied. Kindly allow location permissions in your browser settings to proceed."
-                        this.fetching_location = false;
+            fetchDeviceCoordinates() {
+                return new Promise((resolve, reject) => {
+                    if (!("geolocation" in navigator)) {
+                        reject(new Error("Geolocation is not supported by this browser"));
+                        return;
                     }
-                } else {
-                    console.error("Geolocation is not supported by this browser.");
-                    this.errors.server = "Geolocation is not supported by this browser"
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                        },
+                        (error) => {
+                            let message;
+                            switch (error.code) {
+                                case error.PERMISSION_DENIED:
+                                    message = "Permission denied. Please allow location access.";
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    message = "Location information is unavailable.";
+                                    break;
+                                case error.TIMEOUT:
+                                    message = "Location request timed out.";
+                                    break;
+                                default:
+                                    message = "An unknown error occurred.";
+                            }
+                            reject(new Error(message));
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                });
+            },
+            async getLocation() {
+                this.errors.server = ""
+                this.fetching_location = true;
+                try {
+                    const { lat, lng } = await this.fetchDeviceCoordinates();
+
+                    this.data.userLocation = [lat, lng];
+                    this.userLocation2 = [lat, lng];
+                    this.center = [lat, lng];
+
+                    // Call reverse geocoding function
+                    await this.getAddress(lat, lng);
+                } catch (error) {
+                    console.error("Error getting location:", error.message);
+                    this.errors.server = error.message;
+                } finally {
+                    this.fetching_location = false;
+                }
+            },
+            async useCurrentLocationForAccount() {
+                if (navigator.userAgent.includes("FBAN") || navigator.userAgent.includes("FBAV")) {
+                    this.errors.server = "To provide accurate results, we need access to your location. Please open this link in your device’s main browser (like Chrome or Safari), as Facebook Messenger’s built-in browser may not allow location access.";
+                    this.isMessengerBrowser = true;
+                    return;
+                }
+
+                this.errors.server = "";
+                this.fetching_location = true;
+                try {
+                    const { lat, lng } = await this.fetchDeviceCoordinates();
+
+                    this.data.userLocation = [lat, lng];
+                    this.userLocation2 = [lat, lng];
+                    this.center = [lat, lng];
+                    this.data.accountLocationMissing = false;
+                    this.errors.userLocation = "";
+
+                    await this.checkPowerInterruptionsForArea({
+                        municipalityName: this.data.municipality,
+                        areaCode: this.data.cfareacode,
+                    });
+                } catch (error) {
+                    console.error("Error getting location:", error.message);
+                    this.errors.server = error.message;
+                } finally {
+                    this.fetching_location = false;
                 }
             },
             onMapReady(map) {
@@ -983,6 +1004,8 @@ import CryptoJS from 'crypto-js';
                 this.data.userLocation = [event.target.getLatLng().lat, event.target.getLatLng().lng];
                 this.userLocation2 = [event.target.getLatLng().lat, event.target.getLatLng().lng];
                 this.center = this.data.userLocation;
+                this.data.accountLocationMissing = false;
+                this.errors.userLocation = "";
                 this.getAddress(event.target.getLatLng().lat, event.target.getLatLng().lng);
                 // this.getMyTicketRange()
                 // this.getAddress(event.target.getLatLng().lat, event.target.getLatLng().lng);
@@ -1038,6 +1061,7 @@ import CryptoJS from 'crypto-js';
                     message: "",
                     account: "",
                     accountValid: false,
+                    accountLocationMissing: false,
                 }
                 this.matchedPowerInterruptions = []
                 this.interruptionNoticeLocationLabel = ''
@@ -1188,20 +1212,6 @@ import CryptoJS from 'crypto-js';
                     
 
                     if(data.isValid){
-                        if(data.data.nflatitude == null || data.data.nflongitude == null){
-                            this.isLoading = false
-                            this.data.userLocation = [0,0];
-                            this.data.accountValid = false;
-                            this.data.name = ""
-                            this.data.address = ""
-                            this.errors.account = "Account has no location data. Please use current location";
-                            return "Account has no location data. Please use current location";
-                        }
-                        this.data.userLocation = [
-                            data.data.nflatitude ?? 0,
-                            data.data.nflongitude ?? 0
-                        ];
-
                         this.data.accountValid = true;
                         this.data.name = data.data.account_name;
                         this.data.address = data.data.account_address;
@@ -1213,7 +1223,27 @@ import CryptoJS from 'crypto-js';
                         this.data.municipality =
                             this.areaMap[String(data.data.cfareacode)] ||
                             this.extractMunicipalityFromAddress(data.data.account_address);
-                        
+
+                        if(data.data.nflatitude == null || data.data.nflongitude == null){
+                            this.isLoading = false
+                            this.data.userLocation = "";
+                            this.data.accountLocationMissing = true;
+                            this.errors.account = null;
+                            this.errors.userLocation = "This account has no saved location. Tap 'Use Current Location' below to set it.";
+                            await this.checkPowerInterruptionsForArea({
+                                municipalityName: this.data.municipality,
+                                areaCode: data.data.cfareacode,
+                            });
+                            return "";
+                        }
+
+                        this.data.accountLocationMissing = false;
+                        this.errors.userLocation = null;
+                        this.data.userLocation = [
+                            data.data.nflatitude ?? 0,
+                            data.data.nflongitude ?? 0
+                        ];
+
                         console.log(this.data.userLocation)
                         this.userLocation2 = [data.data.nflatitude, data.data.nflongitude];
                         this.center = [data.data.nflatitude, data.data.nflongitude];
@@ -1221,11 +1251,13 @@ import CryptoJS from 'crypto-js';
                             municipalityName: this.data.municipality,
                             areaCode: data.data.cfareacode,
                         });
-                        
+
                     }else{
                         this.data.userLocation = [0,0];
                         this.data.name = null;
                         this.data.address = null;
+                        this.data.accountLocationMissing = false;
+                        this.errors.userLocation = null;
                         this.errors.account = "Invalid Account Number"
                         this.matchedPowerInterruptions = []
                         this.interruptionNoticeLocationLabel = ''
@@ -1264,7 +1296,7 @@ import CryptoJS from 'crypto-js';
                     account: () => this.locationType == 'account' ?  this.data.accountValid ? "" : "Invalid Account Number" : "",
                     mobile: () => this.validateMobileNumber(value),
                     name: () => this.validateName(value),
-                    userLocation: () => (value ? "" : this.locationType === 'current' ? "Location is required." : ''),
+                    userLocation: () => (value ? "" : this.locationType === 'current' ? "Location is required." : this.data.accountLocationMissing ? "This account has no saved location. Tap 'Use Current Location' below to set it." : ''),
                     address: () => (value ? "" : this.locationType === 'account' ? "Address is required." : ""),
                     // municipality: () => (value ? "" : this.locationType === 'manual' ? "Municipality is required." : ""),
                     // barangay: () => (value ? "" : this.locationType === 'manual' ? "Barangay is required." : ""),
