@@ -196,7 +196,6 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                         </div>
                     </div>
                     <div class="space-y-3" v-if="isFollowUp !== null && isFollowUp === false">
-                        
                         <!-- <div v-if="tickets && tickets.pending_ticket.length == 0" class="bg-red-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700"> -->
                         <!-- <div class="bg-orange-100 text-center border border-gray-300 rounded-lg p-3 text-gray-700" v-if="tickets_in_range.length > 0">
                             There {{ tickets_in_range.length === 1 ? 'is' : 'are' }} {{ tickets_in_range.length }} active ticket{{ tickets_in_range.length !== 1 ? 's' : '' }} in your area.
@@ -572,6 +571,24 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                         Note: <br/>
                         Kindly keep your ticket number for follow-up or status inquiries.
                     </p>
+                    <div v-if="summaryIsAfterHours" class="mb-5 rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 px-3 py-3 text-left text-amber-950 shadow-sm sm:px-4 sm:py-3.5">
+                        <div class="flex items-start gap-2.5 sm:gap-3">
+                            <div class="mt-0.5 shrink-0 text-amber-700">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[10px] font-semibold tracking-[0.04em] text-amber-700 sm:text-[11px]">
+                                    Outside office hours
+                                </div>
+                                <div class="mt-0.5 text-[12px] leading-5 text-amber-950 sm:text-[13px] sm:leading-6">
+                                    Our office hours are 8:00 AM–5:00 PM, Monday to Friday. Your report has been recorded, but response may be delayed until the next business day. For urgent concerns, call {{ mainHotlines.join(' or ') }}<span v-if="resolveCaoContact(summaryData.municipality)">, or the {{ summaryData.municipality }} office at {{ resolveCaoContact(summaryData.municipality) }}</span>.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="flex gap-2 flex-wrap">
                         <button class="text-gray-800 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 py-1 px-2 text-sm rounded-md" @click="gobackhome()">Back to home</button>
                         <button class="text-blue-700 bg-blue-100 hover:bg-blue-200 active:bg-blue-300 py-1 px-2 text-sm rounded-md" @click="$router.push({ name: 'PowerOutageMap', query: { ticket: summaryData.ticket_no } })">View Power Outage Map</button>
@@ -693,7 +710,21 @@ import CryptoJS from 'crypto-js';
                     '48': 'CAO 4',
                     '49': 'CAO 5',
                     '50': 'CAO 6',
-                }
+                },
+                mainHotlines: ['0963-701-6688', '0929-378-2074'],
+                municipalityCaoContacts: {
+                    'pamplona': '0963-124-0252',
+                    'san fernando': '0909-223-8259',
+                    'libmanan': '0938-870-7349 / (054) 511-8223',
+                    'cabusao': '0938-870-7349 / (054) 511-8223',
+                    'sipocot': '0947-554-2560',
+                    'lupi': '0947-554-2560',
+                    'ragay': '0947-802-6296',
+                    'del gallego': '0947-802-6296',
+                    'camaligan': '0938-870-7319',
+                    'gainza': '0938-870-7319',
+                    'pasacao': '0949-970-3680 / (054) 513-9332',
+                },
             };
         },
         computed: {
@@ -738,6 +769,10 @@ import CryptoJS from 'crypto-js';
             },
             isSubmissionBlockedByInterruption() {
                 return this.activeBlockingInterruptions.length > 0;
+            },
+            summaryIsAfterHours() {
+                if (!this.summaryData || !this.summaryData.created_at) return false;
+                return !this.isWithinOfficeHours(new Date(this.summaryData.created_at));
             }
         },
         async created() {
@@ -850,6 +885,24 @@ import CryptoJS from 'crypto-js';
             }
         },  
         methods: {
+            isWithinOfficeHours(date) {
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'Asia/Manila',
+                    weekday: 'short',
+                    hour: 'numeric',
+                    hour12: false,
+                }).formatToParts(date);
+
+                const weekday = parts.find(p => p.type === 'weekday')?.value;
+                const hour = parseInt(parts.find(p => p.type === 'hour')?.value, 10) % 24;
+
+                const isWeekday = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(weekday);
+                return isWeekday && hour >= 8 && hour < 17;
+            },
+            resolveCaoContact(municipalityName) {
+                if (!municipalityName) return null;
+                return this.municipalityCaoContacts[municipalityName.trim().toLowerCase()] || null;
+            },
             detectMessengerBrowser(){
                 alert('asdsad')
                 if (navigator.userAgent.includes("FBAN") || navigator.userAgent.includes("FBAV")) {
@@ -1142,6 +1195,7 @@ import CryptoJS from 'crypto-js';
                         .then((response) => {
                             self.summaryData.ticket_no = response.data.ticket_no
                             self.summaryData.created_at = response.data.created_at
+                            self.summaryData.municipality = rawData.municipality || ''
                             self.$nextTick(() => {
                                 self.isSummary = true
                             })
