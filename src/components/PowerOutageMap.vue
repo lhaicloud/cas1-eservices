@@ -574,6 +574,30 @@ export default {
         .setLngLat(coordinates)
         .setHTML(feature.properties.popup_html || '')
         .addTo(this.map);
+
+      this.setupPopupToggle(this.activeTicketPopup);
+    },
+    setupPopupToggle(popup) {
+      if (!popup) return;
+
+      requestAnimationFrame(() => {
+        const el = popup.getElement && popup.getElement();
+        if (!el) return;
+
+        const content = el.querySelector('.consumer-public-popup-content');
+        const toggle = el.querySelector('.consumer-public-popup-toggle');
+        if (!content || !toggle) return;
+
+        if (content.scrollHeight <= content.clientHeight + 2) {
+          toggle.style.display = 'none';
+          return;
+        }
+
+        toggle.addEventListener('click', () => {
+          const expanded = content.classList.toggle('consumer-public-popup-content--expanded');
+          toggle.textContent = expanded ? 'See less' : 'See more';
+        });
+      });
     },
     getTicketMarkerColor(status) {
       if (status == 1) return '#E53935';
@@ -632,18 +656,23 @@ export default {
 
       let html = `
         <div class="consumer-public-popup">
-          <div class="consumer-public-popup-title">Ticket ${this.escapeHtml(ticket.ticket_no.toString().padStart(7, '0'))}</div>
-          <div class="consumer-public-popup-meta">Created ${this.escapeHtml(createdAt)}</div>
-          <div class="consumer-public-popup-row"><b>Status:</b> ${this.escapeHtml(this.getTicketStatusLabel(ticket.status))}</div>
-          <div class="consumer-public-popup-row"><b>Area:</b> ${this.escapeHtml(this.getConsumerTicketArea(ticket))}</div>
-          <div class="consumer-public-popup-row"><b>Concern:</b> ${this.escapeHtml(ticket.message || 'No details provided.')}</div>
+          <div class="consumer-public-popup-content">
+            <div class="consumer-public-popup-title">Ticket ${this.escapeHtml(ticket.ticket_no.toString().padStart(7, '0'))}</div>
+            <div class="consumer-public-popup-meta">Created ${this.escapeHtml(createdAt)}</div>
+            <div class="consumer-public-popup-row"><b>Status:</b> ${this.escapeHtml(this.getTicketStatusLabel(ticket.status))}</div>
+            <div class="consumer-public-popup-row"><b>Area:</b> ${this.escapeHtml(this.getConsumerTicketArea(ticket))}</div>
+            <div class="consumer-public-popup-row"><b>Concern:</b> ${this.escapeHtml(ticket.message || 'No details provided.')}</div>
       `;
 
       if (ticket.remarks) {
         html += `<div class="consumer-public-popup-row"><b>Remarks:</b> ${this.escapeHtml(ticket.remarks)}</div>`;
       }
 
-      html += '</div>';
+      html += `
+          </div>
+          <button type="button" class="consumer-public-popup-toggle">See more</button>
+        </div>
+      `;
       return html;
     },
     async getPowerInterruptionOverlays() {
@@ -858,6 +887,8 @@ export default {
         .setHTML(popupHtml)
         .addTo(this.map);
 
+      this.setupPopupToggle(this.activeInterruptionPopup);
+
       this.activeInterruptionPopup.on('close', () => {
         this.clearHoveredInterruption();
         this.activeInterruptionPopup = null;
@@ -967,11 +998,14 @@ export default {
 
       return `
         <div class="consumer-public-popup">
-          <div class="consumer-public-popup-title">${this.escapeHtml(interruption.title || 'Power Interruption')}</div>
-          <div class="consumer-public-popup-row"><b>Schedule:</b> ${this.escapeHtml(schedule || 'Open ended')}</div>
-          ${reason ? `<div class="consumer-public-popup-row"><b>Reason:</b> ${this.formatInterruptionText(reason)}</div>` : ''}
-          ${affectedArea ? `<div class="consumer-public-popup-row"><b>Affected Area:</b> ${this.formatInterruptionText(affectedArea)}</div>` : ''}
-          ${affectedBarangays ? `<div class="consumer-public-popup-row"><b>Affected Barangays:</b> ${affectedBarangays}</div>` : ''}
+          <div class="consumer-public-popup-content">
+            <div class="consumer-public-popup-title">${this.escapeHtml(interruption.title || 'Power Interruption')}</div>
+            <div class="consumer-public-popup-row"><b>Schedule:</b> ${this.escapeHtml(schedule || 'Open ended')}</div>
+            ${reason ? `<div class="consumer-public-popup-row"><b>Reason:</b> ${this.formatInterruptionText(reason)}</div>` : ''}
+            ${affectedArea ? `<div class="consumer-public-popup-row"><b>Affected Area:</b> ${this.formatInterruptionText(affectedArea)}</div>` : ''}
+            ${affectedBarangays ? `<div class="consumer-public-popup-row"><b>Affected Barangays:</b> ${affectedBarangays}</div>` : ''}
+          </div>
+          <button type="button" class="consumer-public-popup-toggle">See more</button>
         </div>
       `;
     },
@@ -1215,33 +1249,63 @@ export default {
   border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.consumer-public-popup {
+::v-deep .consumer-public-popup {
   color: #22384b;
   font-size: 0.88rem;
   line-height: 1.45;
+  max-width: 280px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
-.consumer-public-popup-title {
+::v-deep .consumer-public-popup-title {
   color: #142c40;
   font-size: 1rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
 }
 
-.consumer-public-popup-meta {
+::v-deep .consumer-public-popup-meta {
   color: #61778a;
   font-size: 0.8rem;
   margin-bottom: 0.7rem;
 }
 
-.consumer-public-popup-row + .consumer-public-popup-row {
+::v-deep .consumer-public-popup-row + .consumer-public-popup-row {
   margin-top: 0.4rem;
+}
+
+::v-deep .consumer-public-popup-content {
+  max-height: 150px;
+  overflow: hidden;
+}
+
+::v-deep .consumer-public-popup-content--expanded {
+  max-height: none;
+  overflow: visible;
+}
+
+::v-deep .consumer-public-popup-toggle {
+  display: block;
+  margin-top: 0.5rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #2563eb;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+::v-deep .consumer-public-popup-toggle:hover {
+  text-decoration: underline;
 }
 
 ::v-deep .maplibregl-popup-content {
   border-radius: 0.95rem;
   padding: 0.9rem 1rem;
   font-family: inherit;
+  max-width: 300px;
 }
 
 ::v-deep .maplibregl-popup-close-button {
