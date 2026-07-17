@@ -527,8 +527,8 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
-                        <h1 class="font-semibold text-lg">Thank you!</h1>
-                        <h1 class="font-medium">Your report has been submitted</h1>
+                        <h1 class="font-semibold text-lg">Thank you for contacting CASURECO I.</h1>
+                        <h1 class="font-medium">Your report has been received and recorded.</h1>
                         
                     </div>
                     <div class="space-y-1.5 text-gray-800">
@@ -587,12 +587,13 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                     ⚠️ For emergency or urgent concerns (e.g., power outage, fallen power lines, sparking electrical facilities, or other incidents requiring immediate attention), please call our 24/7 Hotline:
                                 </div>
                                 <div v-if="resolveCaoContacts(summaryData.municipality, summaryData.idgroup3).length" class="mt-2.5">
-                                    <div class="text-[12px] font-semibold text-amber-900 sm:text-[13px]">{{ resolveCaoOfficeName(summaryData.municipality, summaryData.idgroup3) }} Office</div>
+                                    <div class="text-[12px] font-semibold text-amber-900 sm:text-[13px]">Consumer Assistance Office - {{ resolveCaoOfficeName(summaryData.municipality, summaryData.idgroup3) }}</div>
                                     <div v-for="entry in resolveCaoContacts(summaryData.municipality, summaryData.idgroup3)" :key="entry.number" class="text-[12px] leading-5 text-amber-950 sm:text-[13px] sm:leading-6">
                                         {{ entry.icon }} {{ entry.number }}
                                     </div>
                                 </div>
                                 <div class="mt-2.5">
+                                    <div class="text-[12px] font-semibold text-amber-900 sm:text-[13px]">CASURECO 1 Hotline Numbers</div>
                                     <div v-for="number in mainHotlines" :key="number" class="text-[12px] leading-5 text-amber-950 sm:text-[13px] sm:leading-6">
                                         📞 {{ number }}
                                     </div>
