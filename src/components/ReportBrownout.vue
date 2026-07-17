@@ -396,6 +396,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 id="mobile"
                                 type="number"
                                 v-model="data.mobile"
+                                :tabindex="locationType == 'current' ? 2 : null"
                                 @blur="validateField('mobile')"
                                 :class="[
                                     'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1',
@@ -425,6 +426,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                     id="name"
                                     type="text"
                                     v-model="data.name"
+                                    :tabindex="locationType == 'current' ? 1 : null"
                                     @blur="validateField('name')"
                                     :class="[
                                     'peer block w-full border rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:outline-none focus:ring-1 uppercase',
@@ -489,6 +491,7 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 id="message"
                                 rows="2"
                                 v-model="data.message"
+                                :tabindex="locationType == 'current' ? 3 : null"
                                 :disabled="tickets && tickets.pending_ticket.length > 0"
                                 placeholder="(Optional, but it’s helpful for us to understand your issue better)"
                                 class="peer block w-full border border-gray-300 rounded-md px-3 pt-4 pb-1.5 text-sm placeholder-transparent focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
@@ -580,11 +583,22 @@ Please open this link in your device’s main browser (like Chrome or Safari), a
                                 </svg>
                             </div>
                             <div class="min-w-0 flex-1">
-                                <div class="text-[10px] font-semibold tracking-[0.04em] text-amber-700 sm:text-[11px]">
-                                    Outside office hours
+                                <div class="text-[12px] leading-5 text-amber-950 sm:text-[13px] sm:leading-6">
+                                    ⚠️ For emergency or urgent concerns (e.g., power outage, fallen power lines, sparking electrical facilities, or other incidents requiring immediate attention), please call our 24/7 Hotline:
                                 </div>
-                                <div class="mt-0.5 text-[12px] leading-5 text-amber-950 sm:text-[13px] sm:leading-6">
-                                    Our office hours are 8:00 AM–5:00 PM, Monday to Friday. Your report has been recorded, but response may be delayed until the next business day. For urgent concerns, call {{ mainHotlines.join(' or ') }}<span v-if="resolveCaoContact(summaryData.municipality)">, or the {{ summaryData.municipality }} office at {{ resolveCaoContact(summaryData.municipality) }}</span>.
+                                <div v-if="resolveCaoContacts(summaryData.municipality, summaryData.idgroup3).length" class="mt-2.5">
+                                    <div class="text-[12px] font-semibold text-amber-900 sm:text-[13px]">{{ resolveCaoOfficeName(summaryData.municipality, summaryData.idgroup3) }} Office</div>
+                                    <div v-for="entry in resolveCaoContacts(summaryData.municipality, summaryData.idgroup3)" :key="entry.number" class="text-[12px] leading-5 text-amber-950 sm:text-[13px] sm:leading-6">
+                                        {{ entry.icon }} {{ entry.number }}
+                                    </div>
+                                </div>
+                                <div class="mt-2.5">
+                                    <div v-for="number in mainHotlines" :key="number" class="text-[12px] leading-5 text-amber-950 sm:text-[13px] sm:leading-6">
+                                        📞 {{ number }}
+                                    </div>
+                                </div>
+                                <div class="mt-2.5 text-[12px] leading-5 text-amber-950 sm:text-[13px] sm:leading-6">
+                                    Please note: Your report has been recorded for documentation. For concerns requiring immediate assistance, kindly contact the hotline numbers above so our on-duty personnel can respond promptly.
                                 </div>
                             </div>
                         </div>
@@ -714,16 +728,32 @@ import CryptoJS from 'crypto-js';
                 mainHotlines: ['0963-701-6688', '0929-378-2074'],
                 municipalityCaoContacts: {
                     'pamplona': '0963-124-0252',
-                    'san fernando': '0909-223-8259',
-                    'libmanan': '0938-870-7349 / (054) 511-8223',
-                    'cabusao': '0938-870-7349 / (054) 511-8223',
+                    'san fernando': '0963-124-0252',
+                    'libmanan': '0938-870-7349',
+                    'cabusao': '0938-870-7349',
                     'sipocot': '0947-554-2560',
                     'lupi': '0947-554-2560',
                     'ragay': '0947-802-6296',
                     'del gallego': '0947-802-6296',
                     'camaligan': '0938-870-7319',
                     'gainza': '0938-870-7319',
-                    'pasacao': '0949-970-3680 / (054) 513-9332',
+                    'pasacao': '0949-970-3680',
+                },
+                caoContacts: {
+                    'CAO 1': '0963-124-0252',
+                    'CAO 2': '0938-870-7349',
+                    'CAO 3': '0947-554-2560',
+                    'CAO 4': '0947-802-6296',
+                    'CAO 5': '0938-870-7319',
+                    'CAO 6': '0949-970-3680',
+                },
+                caoLeadTowns: {
+                    'CAO 1': 'Pamplona',
+                    'CAO 2': 'Libmanan',
+                    'CAO 3': 'Sipocot',
+                    'CAO 4': 'Ragay',
+                    'CAO 5': 'Camaligan',
+                    'CAO 6': 'Pasacao',
                 },
             };
         },
@@ -899,9 +929,27 @@ import CryptoJS from 'crypto-js';
                 const isWeekday = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(weekday);
                 return isWeekday && hour >= 8 && hour < 17;
             },
-            resolveCaoContact(municipalityName) {
+            resolveCaoContact(municipalityName, idgroup3) {
+                if (idgroup3 !== undefined && idgroup3 !== null) {
+                    const cao = this.caoMap[String(idgroup3)];
+                    if (cao && this.caoContacts[cao]) return this.caoContacts[cao];
+                }
                 if (!municipalityName) return null;
                 return this.municipalityCaoContacts[municipalityName.trim().toLowerCase()] || null;
+            },
+            resolveCaoOfficeName(municipalityName, idgroup3) {
+                if (idgroup3 !== undefined && idgroup3 !== null) {
+                    const cao = this.caoMap[String(idgroup3)];
+                    if (cao && this.caoLeadTowns[cao]) return this.caoLeadTowns[cao];
+                }
+                return municipalityName || '';
+            },
+            resolveCaoContacts(municipalityName, idgroup3) {
+                const raw = this.resolveCaoContact(municipalityName, idgroup3);
+                if (!raw) return [];
+                const parts = raw.split('/').map(p => p.trim()).filter(Boolean);
+                const icons = ['📞', '☎️'];
+                return parts.map((number, i) => ({ icon: icons[i] || '📞', number }));
             },
             detectMessengerBrowser(){
                 alert('asdsad')
@@ -1196,6 +1244,7 @@ import CryptoJS from 'crypto-js';
                             self.summaryData.ticket_no = response.data.ticket_no
                             self.summaryData.created_at = response.data.created_at
                             self.summaryData.municipality = rawData.municipality || ''
+                            self.summaryData.idgroup3 = response.data.idgroup3
                             self.$nextTick(() => {
                                 self.isSummary = true
                             })
@@ -1275,6 +1324,7 @@ import CryptoJS from 'crypto-js';
                         this.data.bgy_id = data.data.bgy_id;
                         this.data.cfareacode = data.data.cfareacode;
                         this.data.municipality =
+                            this.areaMap[String(account).substring(0, 2)] ||
                             this.areaMap[String(data.data.cfareacode)] ||
                             this.extractMunicipalityFromAddress(data.data.account_address);
 
